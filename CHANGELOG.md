@@ -1,3 +1,7 @@
+### 4.0.1
+
+Minor documentation tweak.
+
 ### 4.0.0
 
 * Added complete grammar documentation.
