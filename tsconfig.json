@@ -1,0 +1,12 @@
+{
+  "compilerOptions": {
+    "allowJs": true,
+    "declaration": true,
+    "emitDeclarationOnly": true,
+    "outDir": "types",
+    "noEmit": false,
+    "skipLibCheck": true
+  },
+  "include": ["lib/index.d.ts"],
+  "exclude": ["node_modules", "dist"]
+}

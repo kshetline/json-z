@@ -1,29 +1,29 @@
 {
   "name": "json-z",
-  "version": "3.3.2",
+  "version": "4.0.0",
   "description": "JSON for everyone.",
-  "main": "lib/index.js",
+  "main": "lib/index.min.js",
   "types": "lib/index.d.ts",
-  "bin": "lib/cli.js",
-  "browser": "dist/index.js",
+  "bin": {
+    "json-z": "lib/cli.js"
+  },
+  "browser": "dist/index.min.js",
   "files": [
     "lib/",
     "dist/"
   ],
   "engines": {
-    "node": ">=6"
+    "node": ">=14"
   },
   "scripts": {
     "build": "rollup -c && copyfiles -f lib/index.d.ts dist/",
-    "build-package": "node build/package.js",
-    "build-unicode": "node build/unicode.js",
-    "coverage": "tap --coverage-report html test",
-    "lint": "eslint --fix .",
+    "coverage": "nyc report --reporter=text-lcov > coverage/lcov.info",
+    "lint": "eslint .",
     "prepublishOnly": "npm run production",
     "preversion": "npm run production",
     "production": "npm run lint && npm test && npm run build",
-    "test": "tap -Rspec --100 test",
-    "quick-test": "tap -T -Rspec test/stringify.spec.js",
+    "test": "nyc --reporter=text --reporter=html mocha test/**/*.spec.mjs",
+    "quick-test": "mocha test/errors.spec.mjs",
     "version": "npm run build-package && git add package.json5"
   },
   "repository": {
@@ -33,10 +33,7 @@
   "keywords": [
     "bigint",
     "big decimal",
-    "ecmascript",
-    "es5",
-    "es6",
-    "es2015",
+    "decimal128",
     "json",
     "json5",
     "jsonz",
@@ -61,29 +58,37 @@
     ]
   },
   "dependencies": {
-    "minimist": "^1.2.5"
+    "minimist": "1.2.6"
   },
   "devDependencies": {
-    "big-integer": "^1.6.48",
+    "@types/chai": "^4.3.1",
+    "@types/mocha": "^9.1.1",
+    "@types/node": "^22.15.18",
+    "@typescript-eslint/eslint-plugin": "^8.32.1",
+    "@typescript-eslint/parser": "^8.32.1",
+    "chai": "^4.3.6",
     "copyfiles": "^2.3.0",
     "core-js": "^2.6.11",
-    "coveralls": "^3.1.0",
-    "decimal.js": "^10.2.0",
+    "coveralls": "^3.1.1",
+    "decimal.js": "^10.5.0",
     "decimal.js-light": "^2.5.0",
-    "eslint": "^5.16.0",
-    "eslint-config-standard": "^12.0.0",
-    "eslint-plugin-import": "^2.22.0",
-    "eslint-plugin-node": "^8.0.1",
-    "eslint-plugin-promise": "^4.2.1",
-    "eslint-plugin-standard": "^4.0.1",
+    "eslint": "^8.57.1",
+    "eslint-config-standard": "^17.1.0",
+    "eslint-plugin-chai-friendly": "^1.0.1",
+    "eslint-plugin-import": "^2.31.0",
+    "eslint-plugin-node": "^11.1.0",
+    "eslint-plugin-promise": "^6.6.0",
+    "mocha": "^10.2.0",
+    "nyc": "^15.1.0",
+    "proposal-decimal": "^20250514.3.0",
     "regenerate": "^1.4.1",
-    "rollup": "^1.32.1",
-    "rollup-plugin-buble": "^0.19.8",
+    "rimraf": "^3.0.2",
+    "rollup": "^2.71.1",
     "rollup-plugin-commonjs": "^10.1.0",
     "rollup-plugin-node-resolve": "^5.2.0",
-    "rollup-plugin-terser": "^5.3.0",
-    "sinon": "^6.3.5",
-    "tap": "^12.7.0",
+    "rollup-plugin-terser": "^7.0.2",
+    "sinon": "^20.0.0",
+    "typescript": "^5.8.3",
     "unicode-10.0.0": "^0.7.5"
   }
 }

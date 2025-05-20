@@ -27,7 +27,7 @@ export interface JsonZOptions {
   extendedTypes?: ExtendedTypeMode,
   primitiveBigDecimal?: boolean;
   primitiveBigInt?: boolean;
-  primitiveFixedBigDecimal?: boolean;
+  primitiveDecimal?: boolean;
   quote?: '"' | "'" | Quote;
   quoteAllKeys?: boolean;
   replacer?: JsonZReplacer | JsonZAllowedKeys;
@@ -74,14 +74,10 @@ export function removeGlobalizedTypeHandlers(): void;
 
 export const DELETE: Symbol;
 
-export function hasBigInt(): boolean;
-
-export function hasNativeBigInt(): boolean;
-
 export function hasBigDecimal(): boolean;
-
-export function setBigInt(bigIntClass: any): void;
 
 export function setBigDecimal(bigDoubleClass: any): void;
 
-export function setFixedBigDecimal(fixedBigDoubleClass: any): void;
+export function hasDecimal(): boolean;
+
+export function setDecimal(decimalClass: any): void;

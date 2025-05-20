@@ -9,9 +9,13 @@
 [![npm bundle size](https://img.shields.io/bundlephobia/min/json-z.svg)](https://npmjs.org/package/json-z/)
 [![nggyu](https://json-z.org/nggyu.svg)](https://www.youtube.com/watch?v=dQw4w9WgXcQ)
 
-JSON-Z is a superset of [JSON] that aims to alleviate some limitations of JSON by expanding its syntax to include some productions from [ECMAScript 5.1], [ECMAScript 6.0], and later.
+JSON-Z is a superset of [JSON] (and of [JSONC] and [JSON5] as well) which aims to alleviate some limitations of JSON by expanding its syntax (as do JSONC and JSON5), and then go a bit further.
 
-The goal of JSON-Z is to increase flexibility of parsing while, by default, maintaining maximum compatibility with standard JSON for stringification. JSON-Z output, like JSON, is also valid JavaScript (with two *optional* exceptions).
+JSON-Z is designed to increase flexibility when parsing while, by default, maintaining maximum compatibility with standard JSON when stringifying data (unless the user, through optional settings, eschews this compatibility).
+
+JSON-Z output, like JSON and JSON5, is also valid JavaScript (with two *optional* exceptions).
+
+Even when the additional grammar features of JSON-Z are not needed, this library's replacer functions, reviver functions, and formatting capabilities provide additional capabilities which can be useful when dealing JSON and JSON5.
 
 This JavaScript library is the official reference implementation for JSON-Z parsing and serialization libraries.
 
@@ -25,82 +29,90 @@ This JavaScript library is the official reference implementation for JSON-Z pars
 
 [JSON]: https://tools.ietf.org/html/rfc7159
 
-[ECMAScript 5.1]: https://www.ecma-international.org/ecma-262/5.1/
+[JSONC]: https://github.com/komkom/jsonc
 
-[ECMAScript 6.0]: https://www.ecma-international.org/ecma-262/6.0/index.html
+[JSON5]: https://json5.org/
 
-_By the way, the original JSON might be pronounced like the name "Jason", but JSON-Z is pronounced jay-SANH-zee, kind of like "Jumanji"._
-
-_At least that's what I'm going with._
+> _JSON purportedly should be pronounced like the name “Jason”, although I can’t break the habit of thinking about it as_ jay-SAHN _instead._
+>
+>_I'm going to recommend that JSON-Z be pronounced_ jay-SANH-zee, _kind of like "Jumanji"._
+>
+> _Not that I expect anyone to go along with that._
 
 ## Summary of Features
 
-The following features, which are not supported in standard JSON, have been added to JSON-Z:
+The following features, which are not supported in standard JSON, have been added to JSON-Z. Items in **bold** are unique to JSON-Z.
 
 ### Objects
 
 - Object keys may be unquoted ECMAScript 5.1 _[IdentifierName]_ s.
 - Unquoted object keys may include character escapes.
 - Character escapes with two hex digits (`\xXX`) are supported for parsing, as well as the standard four-digit `\uXXXX` form.
-- Object keys may be single quoted or backtick quoted (using backticks does not, however, invoke string interpolation).
+- Object keys may be single quoted or **backtick quoted** (using backticks is not however intended to invoke string interpolation).
 - Object key/value pairs may have a single trailing comma.
 
 ### Arrays
 
 - Array elements may have a single trailing comma.
-- Arrays may be sparse, e.g. `[1, , 3, 4]`.
-- If arrays have string keys with associated values (not recommended!), e.g. `[1, 2, 3, #frequency: "Kenneth"]`, such key/value pairs can be parsed and optionally stringified. This also applies to numeric keys which are negative or non-integer. (The `#` is not part of the key, it simply precedes any explicitly keyed value in an array.) Key/value pairs such as these are normally hidden, and do not affect the `length` property of an array.
+- **Arrays may be sparse**, e.g. `[1, , 3, 4]`.
+- **If arrays have string keys with associated values (not recommended!)**, e.g. `[1, 2, 3, #frequency: "Kenneth"]`, **such key/value pairs can be parsed and optionally stringified. This also applies to numeric keys which are negative or non-integer. (The** `#` **is not part of the key, it simply precedes any explicitly keyed value in an array.) Key/value pairs such as these are normally hidden, and do not affect the `length` property of an array.**
 
 ### Strings
 
-- Strings may be single quoted or backtick quoted (using backticks does not, however, invoke string interpolation).
+- Strings may be single quoted or **backtick quoted** (using backticks is not however intended to invoke string interpolation<span>&#42;</span>).
 - Strings may span multiple lines by escaping new line characters.
 - Character escapes with two hex digits (`\xXX`) are supported for parsing, as well as the standard four-digit `\uXXXX` form.
 
+<span>&#42;</span>The sequence `${` must be escaped as `$\{` to avoid being interpreted as the start of a template literal.
+
 ### Numbers
 
-- Numbers may be hexadecimal, octal, or binary.
-- Numbers may have a leading or trailing decimal point, and may contain underscores used as separators.
-- Numbers may be [IEEE 754] positive infinity (`Infinity`), negative infinity (`-Infinity`), and `NaN`.
+- Numbers may be hexadecimal, **octal**, or **binary**.
+- Numbers may have a leading or trailing decimal point, **and may contain underscores used as separators**.
+- Numbers may be [IEEE 754] positive infinity (`Infinity`), negative infinity (`-Infinity`), or `NaN`.
 - Numbers may begin with an explicit plus sign.
-- Negative zero (`-0`) is parsed and stringified as distinct from positive 0.
-- Numbers may be `BigInt` values by appending a lowercase `n` to the end of an integer value, e.g. `-23888n`, or `9_223_372_036_854_775_807n`.
-- When running a version of JavaScript that does not support native `BigInt` primitives, a third-party `BigInt`-like library can be used.
-- `BigInt` values can be in decimal, hexadecimal, octal, or binary form. Exponential notation can also be used (e.g. `4.2E12n`) so long as the value including its exponent specifies an integer value.
-- Numbers may be arbitrary precision decimal values by appending a lowercase `m`, e.g. `3.1415926535897932384626433832795028841971693993751m`. `NaN_m`, `Infinity_m`, and `-Infinity_m` can also be used. (Using a third-party extended-precision library is necessary to take full advantage of this feature.)
-- Numbers may be fixed precision decimal values by appending a lowercase `d`, e.g. `2.718281828459045235360287471352662d`. `NaN_d`, `Infinity_d`, and `-Infinity_d` can also be used. (Using a third-party extended-precision library is necessary to take full advantage of this feature.)<br><br>_Note: Decimal constants in JavaScript, and the related support for extended precision decimal math, are currently only Stage 0 and Stage1 proposals. JSON-Z support for these constants should be considered experimental. If eventually implemented, it is most likely only one form (arbitrary precision, fixed precision, but not both) of extended precision decimal math will survive, and only one of the two suffixes (`m` or `d`) will be used. It is purely a convention of JSON-Z to use `m` for arbitrary precision, and `d` for fixed precision._
+- **Negative zero** (`-0`) **is parsed and stringified as distinct from positive 0**.
+- **Numbers may be `BigInt` values by appending a lowercase** `n` **to the end of an integer value, e.g. `-23888n`, or `9_223_372_036_854_775_807n`.**<br><br>
+`BigInt` values can be in decimal, hexadecimal, octal, or binary form. Exponential notation can also be used (e.g. `4.2E12n`) so long as the value, including its exponent, specifies an integer value.
+- **Numbers may be arbitrary precision decimal values by appending a lowercase** `m`, **e.g. `3.1415926535897932384626433832795028841971693993751m`. `NaN_m`, `Infinity_m`, and `-Infinity_m` can also be used.** (Using a third-party extended-precision library is necessary to take full advantage of this feature.)
+- **Numbers may be** [IEEE 754] **Decimal128 values by appending a lowercase** `d`, **e.g. `2.718281828459045235360287471352662d`. `NaN_d`, `Infinity_d`, and `-Infinity_d` can also be used.** (Using a third-party extended-precision library is necessary to take full advantage of this feature, with [proposal-decimal](https://www.npmjs.com/package/proposal-decimal) being recommended.)<br><br>_Note: Decimal math constants in JavaScript had been part of [a larger decimal math proposal](https://github.com/tc39/proposal-decimal) for future versions of JavaScript, but that particular feature from the proposal has been abandoned. JSON-Z support for such constants is now purely a convention of JSON-Z, with an `m` suffix for arbitrary precision decimal values, and `d` for fixed precision._
 
 ### Comments
 
 - Single and multi-line comments are allowed.
 
-### White Space
+### Whitespace
 
-- Additional white space characters are allowed.
+- Additional whitespace characters are allowed.
 
 ### Undefined
 
-- Handles `undefined` values.
+- **Handles** `undefined` **values**.
 
-### Replacer functions
+### Replacer functions (JSON-Z specific differences)
 
-- As part of handling `undefined` values, when a replacer function returns `undefined`, that will itself become the encoded value of the value which has been replaced.
-- Replacer functions can return the special value `JSONZ.DELETE` to indicate that a key/value pair in an object be deleted, or that a slot in an array be left empty.
+- When a replacer function returns `undefined` for the value of an item, for consistency with JSON replacer functions, that with cause the item to be deleted from the result. (`JSONZ.DELETE` can also be used for this purpose.)
+- Since JSON-Z can handle explicit `undefined` values, a replacer function can return the special value `JSONZ.UNDEFINED` to replace an item’s value with `undefined`.
+- Replacer functions can return the special value `JSONZ.DELETE` to indicate that a slot in an array be left empty, creating a sparse array.
 - A global replacer function can be specified.
-- For the benefit of anonymous (arrow) functions, which do not have their own `this`, replacer functions are passed the holder of a key/value pair as a third argument to the function.
+- For the benefit of anonymous (arrow) functions, which do not have their own `this` as `functions` do, replacer functions are passed the holder of a key/value pair as a third argument to the function.
 
-### Reviver functions
+### Reviver functions (JSON-Z specific differences)
 
 - A global reviver function can be specified.
 - For the benefit of anonymous (arrow) functions, which do not have their own `this`, reviver functions are passed the holder of a key/value pair as a third argument to the function.
 
-### Extended types
+### Extended types (JSON-Z specific)
 
-In standard JSON, all values are either strings, numbers, booleans, or `null`s, or values are objects or arrays composed of the latter as well as other objects and arrays. JSON-Z optionally allows special handling for other data types, so that values such `Date` or `Set` objects can be specifically represented as such, parsed and stringified distinctly without having to rely on reviver and replacer functions.
+In standard JSON, all values are either:
+ - Strings, numbers, `true`, `false`, or `null`
+ - Objects or arrays composed of the above, as well as other objects and arrays.
+
+JSON-Z optionally provides special handling for other data types, so that values such `Date` or `Set` objects can be specifically represented as such, parsed, and stringified distinctly without having to rely on reviver and replacer functions.
 
 - Built-in support for `Date`, `Map`, `Set`, `RegExp`, and `Uint8Array` (using base64 representation). `Uint8ClampedArray` is also covered, treated as `Uint8Array`.
-- There is also built-in support for `BigInt` and "Big Decimal" values as extended types, an alternative to using plain numbers with `n`, `m`, or `d` suffixes.
-- User-defined extended type handlers, which can both add new data types, or override the handling of built-in extended data types.
+- There is also built-in support for `BigInt` and "Big Decimal" values as extended types, an alternative to “plain” numbers, with `n`, `m`, or `d` suffixes.
+- User-defined extended type handlers can be specified, which can both add new data types or override the handling of built-in extended data types.
 
 [IdentifierName]: https://www.ecma-international.org/ecma-262/5.1/#sec-7.6
 
@@ -126,8 +138,8 @@ No \\n's!",
   positiveSign: +1,
   notDefined: undefined,
   bigInt: -9223372036854775808n,
+  decimal: 2.718281828459045235360287471352662d,
   bigDecimal: 3.1415926535897932384626433832795028841971693993751m,
-  fixedBigDecimal: 2.718281828459045235360287471352662d,
   trailingComma: 'in objects', andIn: ['arrays',],
   sparseArray: [1, 2, , , 5],
   // Function-like extended types. This is revived as a JavaScript `Date` object
@@ -142,7 +154,7 @@ No \\n's!",
 
 ## Specification
 
-For a detailed explanation of the JSON-Z format, please read (_TODO: create specs_).
+For a detailed explication of JSON-Z grammar, please see the [formal grammar](https://json-z.org/assets/grammar.html) documentation.
 
 ## Installation
 
@@ -174,9 +186,9 @@ The JSON-Z API is compatible with the [JSON API]. Type definitions to support Ty
 
 [JSON API]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON
 
-### JSONZ.parse()
+### JSONZ.parse
 
-Parses a JSON-Z string, constructing the JavaScript value or object described by the string. An optional reviver function can be provided to perform a transformation on the resulting object before it is returned.
+Parses a JSON-Z string, constructing the JavaScript value or object described by `text`. An optional reviver function can be provided to perform a transformation on the resulting object before it is returned.
 
 _Note: One important change from JSON5 is that the `JSONZ.parse()` function is re-entrant, so it is safe to call `JSONZ.parse()` from within reviver functions and extended type handlers._
 
@@ -212,24 +224,24 @@ This works very much like [`JSON.stringify`](https://developer.mozilla.org/en-US
 #### Parameters
 
 - `value`: The value to convert to a JSON-Z string.
-- `replacer`: A function that alters the behavior of the stringification process, or an array of String and Number objects that serve as a whitelist for selecting/filtering the properties of the value object to be included in the JSON-Z string. If this value is null or not provided, all properties of the object are included in the resulting JSON-Z string.
+- `replacer`: A function which alters the behavior of the stringification process, or an array of String and Number objects that serve as an allowlist for selecting/filtering the properties of the value object to be included in the JSON-Z string. If this value is null or not provided, all properties of the object are included in the resulting JSON-Z string.
 
   When using the standard `JSON.stringify()`, a replacer function is called with two arguments: `key` and `value`. JSON-Z adds a third argument, `holder`. This value is already available to standard `function`s as `this`, but `this` won't be bound to `holder` when using an anonymous (arrow) function as a replacer, so the third argument (which can be ignored if not needed) provides alternative access to the `holder` value.
-- `space`: A string or number that is used to insert white space into the output JSON-Z string for readability purposes. If this is a number, it indicates the number of space characters to use as white space; this number is capped at 10. Values less than 1 indicate that no space should be used. If this is a string, the string (or the first 10 characters of the string, if it's longer than that) is used as white space. A single space adds white space without adding indentation. If this parameter is not provided (or is null), no white space is added. If indenting white space is used, trailing commas can optionally appear in objects and arrays.
+- `space`: A string or number used to insert whitespace into the output JSON-Z string for readability purposes. If this is a number, it indicates the number of space characters to use as whitespace; this number is capped at 10. Values less than 1 indicate that no space should be used. If this is a string, the string (or the first 10 characters of the string, if it's longer than that) is used as white space. A single space adds white space without adding indentation. If this parameter is not provided (or is null), no whitespace is added. If indenting white space is used, trailing commas can optionally appear in objects and arrays.
 - `options`: This can either be an `OptionSet` value (see [below](#jsonzsetoptionsoptions-additionaloptions)), or an object with the following properties:
-  - `extendedPrimitives`: If `true` (the default is `false`) this enables direct stringification of `Infinity`, `-Infinity`, and `NaN`. Otherwise, these values become `null`.
+  - `extendedPrimitives`: If `true` (the default is `false`) this enables direct stringification of `Infinity`, `-Infinity`, `NaN`, and `undefined`. Otherwise, these values become `null`.
   - `extendedTypes`: If `JSONZ.ExtendedTypeMode.AS_FUNCTIONS` or `JSONZ.ExtendedTypeMode.AS_OBJECTS` (the default is `JSONZ.ExtendedTypeMode.OFF`), this enables special representation of additional data types, such as `_Date("2019-07-28T08:49:58.202Z")`, which can be parsed directly as a JavaScript `Date` object, or `{"_$_": "Date", "_$_value": "2019-07-28T08:49:58.202Z"}`, which can be automatically rendered as a `Date` object by a built-in replacer.
   - `primitiveBigDecimal`: 🧪 If `true` (the default is `false`) this enables direct stringification of arbitrary-precision big decimals using the '`m`' suffix. Otherwise, big decimals must be provided as quoted strings or extended types. _(Note: The '`m`' suffix can't be parsed as current valid JavaScript, but it is potentially a future valid standard notation.)_
   - `primitiveBigInt`: If `true` (the default is `false`) this enables direct stringification of big integers using the '`n`' suffix. Otherwise, big integers are provided as quoted strings or extended types.
-  - `primitiveFixedBigDecimal`: 🧪 If `true` (the default is `false`) this enables direct stringification of fixed-precision big decimals using the '`d`' suffix. Otherwise, big decimals must be provided as quoted strings or extended types. _(Note: The '`d`' suffix can't be parsed as current valid JavaScript, but it is potentially a future valid standard notation.)_
+  - `primitiveDecimal`: 🧪 If `true` (the default is `false`) this enables direct stringification of fixed-precision big decimals using the '`d`' suffix. Otherwise, big decimals must be provided as quoted strings or extended types. _(Note: The '`d`' suffix can't be parsed as current valid JavaScript, but it is potentially a future valid standard notation.)_
   - `quote`: A string representing the quote character to use when serializing strings (single quote `'` or double quote `"`), or one of the following values:
     - `JSONZ.Quote.DOUBLE`: Always quote with double quotes (this is the default).
     - `JSONZ.Quote.SINGLE`: Always quote with single quotes.
     - `JSONZ.Quote.PREFER_DOUBLE`: Quote with double quotes, but switch to single quotes or backticks to reduce the number of characters which have to be backslash escaped.
-    - `JSONZ.Quote.PREFER_SINGLE`: Quote with single quotes, but switch to single quotes or backticks to reduce the number of characters which have to be backslash escaped.
+    - `JSONZ.Quote.PREFER_SINGLE`: Quote with single quotes, but switch to double quotes or backticks to reduce the number of characters which have to be backslash escaped.
   - `quoteAllKeys`: By default (a `true` value), object keys are quoted, just as in standard JSON. If set to `false` quotes are omitted unless syntactically necessary.
   - `replacer`: Same as the `replacer` parameter.
-  - `revealHiddenArrayProperties`: Consider this an experimental option. While normally arrays should only have data stored using non-negative integer indices, data _can_ be stored in arrays using string keys and other types of numeric keys. This option will reveal and stringify such additional key/value pairs if present, but this is at the expense of making the JSON-Z output something that must be parsed back using JSON-Z, and is no longer directly usable as valid JavaScript.
+  - `revealHiddenArrayProperties`: 🧪 Consider this an experimental option. While normally arrays should only have data stored using non-negative integer indices, data _can_ be stored in arrays using string keys and other types of numeric keys. This option will reveal and stringify such additional key/value pairs if present, but this is at the expense of making the JSON-Z output something that must be parsed back using JSON-Z, and is no longer directly usable as valid JavaScript.
   - `space`: Same as the `space` parameter. The default is no spacing.
   - `sparseArrays`: If `true` (the default is `false`) empty slots in arrays are represented with consecutive commas, e.g. `[1,,3]`. This can't be parsed as valid standard JSON, so by default such an array will be stringified as `[1,null,3]`.
   - `trailingComma`: If `true` (the default is `false`), the final item in an indented object or array has a terminating comma.
@@ -246,53 +258,18 @@ For use with the standard `JSON.stringify()`, any object being stringified can h
 JSON-Z can also use an object's `toJSON()` method, but other factors might take priority as follows:
 
 1. If an object has a `toJSONZ()` method, this takes the highest priority. The value returned by `toJSONZ()` can be further modified by any replacer function in effect. Note that when `toJSONZ()` is called, two arguments are passed to this function: `key` (an array index or object property name) and `holder` (the parent array or parent object (if any) of the object).
-1. If an object can be converted by an extended type handler, that has the next priority. When `ExtendedTypeMode.AS_FUNCTIONS` is in effect, a conversion handled by an extended type handler is final. Replacer functions can, however, further act upon extended type conversions when `ExtendedTypeMode.AS_OBJECTS` is in effect.
-1. `toJSON()` is the next possible value conversion, but only if `toJSONZ()` has not already taken priority.
-1. Any active replacer function is then applied.
-1. Finally, special handling for `BigInt` and "big decimal" numbers takes place.
-
-### JSONZ.hasBigInt()
-
-Returns true if JSON-Z is currently providing full big integer support.
-
-### JSONZ.hasNativeBigInt()
-
-Returns true if the currently running version of JavaScript natively supports big integers via `BigInt` and constants such as `100n`.
+2. If an object can be converted by an extended type handler, that has the next priority. When `ExtendedTypeMode.AS_FUNCTIONS` is in effect, a conversion handled by an extended type handler is final. Replacer functions can, however, further act upon extended type conversions when `ExtendedTypeMode.AS_OBJECTS` is in effect.
+3. `toJSON()` is the next possible value conversion, but only if `toJSONZ()` has not already taken priority.
+4. Any active replacer function is then applied.
+5. Finally, special handling for `BigInt` and "big decimal" numbers takes place.
 
 ### JSONZ.hasBigDecimal()
 
 Returns true if JSON-Z is currently providing full arbitrary-precision big decimal support.
 
-### JSONZ.hasFixedBigDecimal()
+### JSONZ.hasDecimal()
 
 Returns true if JSON-Z is currently providing full fixed-precision big decimal support.
-
-### JSONZ.setBigInt()
-
-Sets a function or class for handling big integer values, or turns special handling of native JavaScript `BigInt` on or off.
-
-#### Syntax
-
-    JSONZ.setBigInt(bigIntClass)
-    JSONZ.setBigInt(active)
-
-#### Parameters
-
-- `bigIntClass`: A function or class responsible for handling big integer values. `bigIntClass(valueAsString, radix)`, e.g. `bigIntClass('123', 10)` or `bigIntClass('D87E', 16)`, either with or without a preceding `new`, must return a big integer object that satisfies the test `bigIntValue instanceof bigIntClass`.
-- `active`: If `true`, native `BigInt` support (if available) is activated. If `false`, `BigInt` support is deactivated.
-
-#### Sample usage
-
-```
-npm install json-z
-npm install big-integer
-```
-```
-const JSONZ = require('json-z);
-const bigInt = require('big-integer');
-
-JSONZ.setBigInt(bigInt);
-```
 
 ### JSONZ.setBigDecimal()
 
@@ -306,31 +283,35 @@ Sets a function or class for handling arbitrary-precision decimal floating-point
 
 - `bigDecimalClass`: A function or class responsible for handling big decimal values. `bigDecimalClass(valueAsString | NaN | Infinity | -Infinity)`, e.g. `bigDecimalClass('14.7')` or `bigDecimalClass(NaN)`, either with or without a preceding `new`, must return a big decimal object that satisfies the test `bigDecimalValue instanceof bigDecimalClass`.
 
-### JSONZ.setFixedBigDecimal()
+### JSONZ.setDecimal()
 
 Sets a function or class for handling fixed-precision decimal floating-point values.
 
 #### Syntax
 
-    JSONZ.setFixedBigDecimal(fixedBigDecimalClass)
+    JSONZ.setDecimal(decimalClass)
 
 #### Parameters
 
-- `fixedBigDecimalClass`: A function or class responsible for handling big decimal values. `fixedBigDecimalClass(valueAsString | NaN | Infinity | -Infinity)`, e.g. `fixedBigDecimalClass('14.7')` or `fixedBigDecimalClass(NaN)`, either with or without a preceding `new`, must return a big decimal object that satisfies the test `fixedBigDecimalValue instanceof fixedBigDecimalClass`.
+- `decimalClass`: A function or class responsible for handling big decimal values. `decimalClass(valueAsString | NaN | Infinity | -Infinity)`, e.g. `decimalClass('14.7')` or `decimalClass(NaN)`, either with or without a preceding `new`, must return a decimal object that satisfies the test `decimalValue instanceof decimalClass`.
 
 #### Sample usage
 
 ```
 npm install json-z
 npm install decimal.js
+npm install proposal-decimal
 ```
+
 ```
 const JSONZ = require('json-z');
-const Decimal = require('decimal.js');
+const Decimal = require('proposal-decimal');
+const BigDecimal = require('decimal.js');
 
-JSONZ.setBigDecimal(Decimal);
-// Approximate representation of decimal128
-JSONZ.setFixedBigDecimal(Decimal.clone().set({precision: 34, minE: -6143, maxE: 6144}));
+JSONZ.setDecimal(Decimal);
+// Alternate approximate representation of decimal128
+// JSONZ.setDecimal(BigDecimal.clone().set({precision: 34, minE: -6143, maxE: 6144}));
+JSONZ.setBigDecimal(BigDecimal);
 ```
 
 ### JSONZ.setOptions(options[, additionalOptions])
@@ -340,7 +321,7 @@ Sets global options which will be used for all calls to `JSONZ.stringify()`. The
 #### Parameters
 
 - `options`: This can be an object just as described for [`JSONZ.stringify()`](#jsonzstringify), or it can be one of the following `OptionSet` constants:
-  - `JSONZ.OptionSet.MAX_COMPATIBILITY`: These are the options which make the output of JSON-Z fully JSON-compliant.
+  - `JSONZ.OptionSet.MAX_COMPATIBILITY`: These are the options that make the output of JSON-Z fully JSON-compliant.
   - `JSONZ.OptionSet.RELAXED`: These options produce output which is fully-valid (albeit cutting-edge) JavaScript, removing unnecessary quotes, favoring single quotes, permitting values like `undefined` and `NaN` and sparse arrays.
   - `JSONZ.OptionSet.THE_WORKS`: This set of options pulls out (nearly) all the stops, creating output which generally will have to be parsed back using JSON-Z, including function-style extended types and big decimal numbers. `revealHiddenArrayProperties` remains false, however, and must be expressly activated.
 - `additionalOptions`: If `options` is an `OptionSet` value, `additionalOptions` can be used to make further options modifications.
@@ -361,7 +342,7 @@ Sets global options which will be used for all calls to `JSONZ.parse()`. The spe
 
 ### JSONZ.resetParseOptions()
 
-Resets the global parsing options, i.e. no automatic type container revival, no global revival function.
+Resets the global parsing options, i.e., no automatic type container revival, no global revival function.
 
 ### JSONZ.addTypeHandler(handler)
 
@@ -414,11 +395,11 @@ This function removes the type handler for the given `typeName`.
 
 ### JSONZ.resetStandardTypeHandlers()
 
-This removes all user-added type handlers, and restores all built-in  type handlers.
+This removes all user-added type handlers, and restores all built-in type handlers.
 
 ### JSONZ.restoreStandardTypeHandlers()
 
-This restores all built-in  type handlers, leaving any user-added type handlers.
+This restores all built-in type handlers, leaving any user-added type handlers.
 
 ### Node.js `require()` JSON-Z files
 
@@ -462,6 +443,11 @@ If `<file>` is not provided, then STDIN is used.
 - `-v`, `--validate`: Validate JSON-Z but do not output JSON
 - `-V`, `--version`: Output the version number
 - `-h`, `--help`: Output usage information
+
+### Formal Grammar
+
+Note: For simplicity's sake, the parsing of line and block comments is omitted from the grammar below.
+
 
 ### Development
 

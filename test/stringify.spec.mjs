@@ -1,79 +1,79 @@
-/* eslint-disable no-new-wrappers */
-const assert = require('assert');
-const JSONZ = require('../lib');
-const big = require('../lib/bignumber-util');
-const optionsMgr = require('../lib/options-manager');
-const bigInt = require('big-integer');
-const Decimal = require('decimal.js');
-const DecimalLight = require('decimal.js-light');
+/* eslint-disable quotes,dot-notation,no-new-wrappers */
+// noinspection JSUnresolvedReference,JSPrimitiveTypeWrapperUsage
 
-const FixedDecimal = Decimal.clone().set({precision: 34, minE: -6143, maxE: 6144});
-const FixedDecimalAlt = DecimalLight.clone().set({precision: 34, minE: -6143, maxE: 6144});
+import { assert } from 'chai';
+import { Decimal } from 'proposal-decimal';
+import { Decimal as BigDecimal } from 'decimal.js';
+import DecimalLight from 'decimal.js-light';
 
-JSONZ.setBigInt(bigInt);
-JSONZ.setBigDecimal(Decimal);
-JSONZ.setFixedBigDecimal(FixedDecimal);
+const JSONZ = (await import('../lib/index.js')).default;
+const big = (await import('../lib/bignumber-util.js')).default;
+const optionsMgr = (await import('../lib/options-manager.js')).default;
+
+const DecimalAlt = DecimalLight.clone().set({ precision: 34, minE: -6143, maxE: 6144 });
+const BigDecimalAlt = DecimalLight.clone().set({ precision: 100, minE: -6143, maxE: 6144 });
+
+JSONZ.setDecimal(Decimal);
+JSONZ.setBigDecimal(BigDecimal);
 JSONZ.setOptions({
   extendedPrimitives: true,
   extendedTypes: JSONZ.ExtendedTypeMode.AS_FUNCTIONS,
   primitiveBigDecimal: true,
   primitiveBigInt: true,
-  primitiveFixedBigDecimal: true,
+  primitiveDecimal: true,
   quote: JSONZ.Quote.PREFER_SINGLE,
   quoteAllKeys: false,
-  sparseArrays: true,
+  sparseArrays: true
 });
-
-require('tap').mochaGlobals();
 
 describe('JSONZ', () => {
   describe('#stringify', () => {
     describe('objects', () => {
       it('stringifies empty objects', () => {
-        assert.strictEqual(JSONZ.stringify({}), '{}');
+        assert.strictEqual(JSONZ.stringify({ }), '{}');
       });
 
       it('stringifies unquoted property names', () => {
-        assert.strictEqual(JSONZ.stringify({a: 1}), '{a:1}');
+        assert.strictEqual(JSONZ.stringify({ a: 1 }), '{a:1}');
       });
 
       it('stringifies single quoted string property names', () => {
-        assert.strictEqual(JSONZ.stringify({'a-b': 1}), "{'a-b':1}");
+        assert.strictEqual(JSONZ.stringify({ 'a-b': 1 }), "{'a-b':1}");
       });
 
       it('stringifies double quoted string property names', () => {
-        assert.strictEqual(JSONZ.stringify({"a'": 1}), `{"a'":1}`);
+        assert.strictEqual(JSONZ.stringify({ "a'": 1 }), `{"a'":1}`);
       });
 
       it('stringifies empty string property names', () => {
-        assert.strictEqual(JSONZ.stringify({'': 1}), "{'':1}");
+        assert.strictEqual(JSONZ.stringify({ '': 1 }), "{'':1}");
       });
 
       it('stringifies special character property names', () => {
-        assert.strictEqual(JSONZ.stringify({$_: 1, _$: 2, 'a\u200C': 3}), '{$_:1,_$:2,a\u200C:3}');
+        assert.strictEqual(JSONZ.stringify({ $_: 1, _$: 2, a\u200C: 3 }), '{$_:1,_$:2,a\u200C:3}');
       });
 
       it('stringifies unicode property names', () => {
         // noinspection NonAsciiCharacters
-        assert.strictEqual(JSONZ.stringify({'ùńîċõďë': 9}), '{ùńîċõďë:9}');
+        assert.strictEqual(JSONZ.stringify({ 'ùńîċõďë': 9 }), '{ùńîċõďë:9}'); // eslint-disable-line quote-props
       });
 
       it('stringifies escaped property names', () => {
-        assert.strictEqual(JSONZ.stringify({'\\\b\f\n\r\t\v\0\x01': 1}), "{'\\\\\\b\\f\\n\\r\\t\\v\\0\\u0001':1}");
+        assert.strictEqual(JSONZ.stringify({ '\\\b\f\n\r\t\v\0\x01': 1 }), "{'\\\\\\b\\f\\n\\r\\t\\v\\0\\u0001':1}");
       });
 
       it('stringifies multiple properties', () => {
-        assert.strictEqual(JSONZ.stringify({abc: 1, def: 2}), '{abc:1,def:2}');
+        assert.strictEqual(JSONZ.stringify({ abc: 1, def: 2 }), '{abc:1,def:2}');
       });
 
       it('stringifies nested objects', () => {
-        assert.strictEqual(JSONZ.stringify({a: {b: 2}}), '{a:{b:2}}');
+        assert.strictEqual(JSONZ.stringify({ a: { b: 2 } }), '{a:{b:2}}');
       });
 
       it('stringifies undefined', () => {
         assert.strictEqual(JSONZ.stringify(undefined), 'undefined');
         assert.strictEqual(JSONZ.stringify([1, undefined, 3]), '[1,undefined,3]');
-        assert.strictEqual(JSONZ.stringify({a: 1, b: undefined, c: 2}), '{a:1,b:undefined,c:2}');
+        assert.strictEqual(JSONZ.stringify({ a: 1, b: undefined, c: 2 }), '{a:1,b:undefined,c:2}');
       });
     });
 
@@ -102,7 +102,7 @@ describe('JSONZ', () => {
       it('stringifies sparse arrays with null for JSON compatibility', () => {
         // noinspection JSConsecutiveCommasInArrayLiteral
         assert.strictEqual(JSONZ.stringify([1,, 2], // eslint-disable-line no-sparse-arrays
-          {extendedPrimitives: false, sparseArrays: false}), '[1,null,2]');
+          { extendedPrimitives: false, sparseArrays: false }), '[1,null,2]');
       });
 
       it('stringifies arrays with hidden negative, non-integer and non-numeric keys', () => {
@@ -113,12 +113,12 @@ describe('JSONZ', () => {
         a['six'] = 'baz';
 
         assert.strictEqual(JSONZ.stringify(a,
-          {revealHiddenArrayProperties: true}), "[1,2,3,#'-1':'foo',#'4.5':'bar',#six:'baz']");
+          { revealHiddenArrayProperties: true }), "[1,2,3,#'-1':'foo',#'4.5':'bar',#six:'baz']");
 
         a[4.5] = JSONZ.DELETE;
 
         assert.strictEqual(JSONZ.stringify(a,
-          {revealHiddenArrayProperties: true, space: 1}), "[1, 2, 3, #'-1': 'foo', #six: 'baz']");
+          { revealHiddenArrayProperties: true, space: 1 }), "[1, 2, 3, #'-1': 'foo', #six: 'baz']");
       });
     });
 
@@ -131,7 +131,7 @@ describe('JSONZ', () => {
     });
 
     it('ignores function properties', () => {
-      assert.strictEqual(JSONZ.stringify({a() {}}), '{}');
+      assert.strictEqual(JSONZ.stringify({ a() {} }), '{}');
     });
 
     it('returns null for functions in arrays', () => {
@@ -148,15 +148,11 @@ describe('JSONZ', () => {
       });
 
       it('stringifies true Boolean objects', () => {
-        // eslint-disable-next-line no-new-wrappers
-        // noinspection JSPrimitiveTypeWrapperUsage
-        assert.strictEqual(JSONZ.stringify(new Boolean(true)), 'true');
+        assert.strictEqual(JSONZ.stringify(Boolean(true)), 'true');
       });
 
       it('stringifies false Boolean objects', () => {
-        // eslint-disable-next-line no-new-wrappers
-        // noinspection JSPrimitiveTypeWrapperUsage
-        assert.strictEqual(JSONZ.stringify(new Boolean(false)), 'false');
+        assert.strictEqual(JSONZ.stringify(Boolean(false)), 'false');
       });
     });
 
@@ -178,41 +174,60 @@ describe('JSONZ', () => {
       });
 
       it('stringifies Number objects', () => {
-        // eslint-disable-next-line no-new-wrappers
-        // noinspection JSPrimitiveTypeWrapperUsage
         assert.strictEqual(JSONZ.stringify(new Number(-1.2)), '-1.2');
+      });
+
+      it('eliminates unnecessary exponential notation', () => {
+        assert.strictEqual(JSONZ.stringify(new Decimal('1.2345678e-3')), '0.0012345678d');
+        assert.strictEqual(JSONZ.stringify(new Decimal('-1.2345678e-2')), '-0.012345678d');
+        assert.strictEqual(JSONZ.stringify(new Decimal('1.2345678e-1')), '0.12345678d');
+        assert.strictEqual(JSONZ.stringify(new Decimal('-1.2345678e+0')), '-1.2345678d');
+        assert.strictEqual(JSONZ.stringify(new Decimal('1.2345678e+1')), '12.345678d');
+        assert.strictEqual(JSONZ.stringify(new Decimal('-1.2345678e+2')), '-123.45678d');
+        assert.strictEqual(JSONZ.stringify(new Decimal('1.2345678e+3')), '1234.5678d');
+        assert.strictEqual(JSONZ.stringify(new Decimal('1.2345678e+4')), '12345.678d');
+        assert.strictEqual(JSONZ.stringify(new Decimal('1.2345678e+5')), '123456.78d');
+        assert.strictEqual(JSONZ.stringify(new Decimal('1.2345678e+6')), '1234567.8d');
+        assert.strictEqual(JSONZ.stringify(new Decimal('1.2345678e+7')), '12345678d');
+        assert.strictEqual(JSONZ.stringify(new Decimal('1.2345678e+8')), '123456780d');
+        assert.strictEqual(JSONZ.stringify(new Decimal('1.2345678e+9')), '1234567800d');
+        assert.strictEqual(JSONZ.stringify(new Decimal('1.2345678e+10')), '12345678000d');
+        assert.strictEqual(JSONZ.stringify(new Decimal('1.234567890123456789e+25')), '1.234567890123456789e+25d');
       });
     });
 
-    if (big.hasBigInt()) {
-      describe('bigints', () => {
-        it('stringifies bigints', () => {
-          assert.strictEqual(JSONZ.stringify([big.toBigInt('4081516234268675309')]), '[4081516234268675309n]');
-          assert.strictEqual(JSONZ.stringify(big.toBigInt('-4081516234268675309')), '-4081516234268675309n');
-        });
-
-        it('stringifies bigint values for standard JSON', () => {
-          assert.strictEqual(JSONZ.stringify(
-            big.toBigInt('4081516234268675309'),
-            {primitiveBigInt: false, extendedTypes: JSONZ.ExtendedTypeMode.OFF, quote: JSONZ.Quote.PREFER_DOUBLE}),
-          '"4081516234268675309"');
-        });
-
-        it('stringifies bigint values as function values', () => {
-          assert.strictEqual(JSONZ.stringify(
-            big.toBigInt('4081516234268675309'),
-            {primitiveBigInt: false, extendedTypes: JSONZ.ExtendedTypeMode.AS_FUNCTIONS}),
-          "_BigInt('4081516234268675309')");
-        });
-
-        it('stringifies bigint values as type containers', () => {
-          assert.strictEqual(JSONZ.stringify(
-            big.toBigInt('4081516234268675309'),
-            {primitiveBigInt: false, extendedTypes: JSONZ.ExtendedTypeMode.AS_OBJECTS}),
-          "{_$_:'BigInt',_$_value:'4081516234268675309'}");
-        });
+    describe('bigints', () => {
+      it('stringifies bigints', () => {
+        assert.strictEqual(JSONZ.stringify([big.toBigInt('4081516234268675309')]), '[4081516234268675309n]');
+        assert.strictEqual(JSONZ.stringify(big.toBigInt('-4081516234268675309')), '-4081516234268675309n');
       });
-    }
+
+      it('stringifies bigint values for standard JSON', () => {
+        assert.strictEqual(JSONZ.stringify(
+          big.toBigInt('4081516234268675309'),
+          { primitiveBigInt: false, extendedTypes: JSONZ.ExtendedTypeMode.OFF, quote: JSONZ.Quote.PREFER_DOUBLE }),
+        '"4081516234268675309"');
+      });
+
+      it('stringifies bigint values as function values', () => {
+        assert.strictEqual(JSONZ.stringify(
+          big.toBigInt('4081516234268675309'),
+          { primitiveBigInt: false, extendedTypes: JSONZ.ExtendedTypeMode.AS_FUNCTIONS }),
+        "_BigInt('4081516234268675309')");
+      });
+
+      it('stringifies bigint values as type containers', () => {
+        assert.strictEqual(JSONZ.stringify(
+          big.toBigInt('4081516234268675309'),
+          { primitiveBigInt: false, extendedTypes: JSONZ.ExtendedTypeMode.AS_OBJECTS }),
+        "{_$_:'BigInt',_$_value:'4081516234268675309'}");
+
+        assert.strictEqual(JSONZ.stringify(
+          big.toBigInt('4081516234268675309'),
+          { primitiveBigInt: false, extendedTypes: JSONZ.ExtendedTypeMode.AS_OBJECTS, space: 2 }),
+        "{_$_: 'BigInt', _$_value: '4081516234268675309'}");
+      });
+    });
 
     if (big.hasBigDecimal()) {
       describe('bigdecimals', () => {
@@ -227,7 +242,7 @@ describe('JSONZ', () => {
 
           assert.strictEqual(JSONZ.stringify(
             big.toBigDecimal(1 / 0),
-            {primitiveBigDecimal: false, extendedPrimitives: true, extendedTypes: JSONZ.ExtendedTypeMode.OFF, quote: JSONZ.Quote.PREFER_DOUBLE}),
+            { primitiveBigDecimal: false, extendedPrimitives: true, extendedTypes: JSONZ.ExtendedTypeMode.OFF, quote: JSONZ.Quote.PREFER_DOUBLE }),
           'Infinity');
         });
 
@@ -238,28 +253,28 @@ describe('JSONZ', () => {
         it('stringifies bigdecimal values for standard JSON', () => {
           assert.strictEqual(JSONZ.stringify(
             [big.toBigDecimal(1 / 0), big.toBigDecimal(-1 / 0), big.toBigDecimal(0 / 0), big.toBigDecimal('3.14')],
-            {primitiveBigDecimal: false, extendedPrimitives: false, extendedTypes: JSONZ.ExtendedTypeMode.OFF, quote: JSONZ.Quote.PREFER_DOUBLE}),
+            { primitiveBigDecimal: false, extendedPrimitives: false, extendedTypes: JSONZ.ExtendedTypeMode.OFF, quote: JSONZ.Quote.PREFER_DOUBLE }),
           '[null,null,null,"3.14"]');
         });
 
         it('stringifies bigdecimal values as function values', () => {
           assert.strictEqual(JSONZ.stringify(
             big.toBigDecimal('2.718281828459045'),
-            {primitiveBigDecimal: false, extendedTypes: JSONZ.ExtendedTypeMode.AS_FUNCTIONS}),
+            { primitiveBigDecimal: false, extendedTypes: JSONZ.ExtendedTypeMode.AS_FUNCTIONS }),
           "_BigDecimal('2.718281828459045')");
         });
 
-        it('stringifies fixed bigdecimal values as function values', () => {
+        it('stringifies fixed decimal values as function values', () => {
           assert.strictEqual(JSONZ.stringify(
-            big.toFixedBigDecimal('2.718281828459045'),
-            {primitiveFixedBigDecimal: false, extendedTypes: JSONZ.ExtendedTypeMode.AS_FUNCTIONS}),
-          "_FixedBigDecimal('2.718281828459045')");
+            big.toDecimal('2.718281828459045'),
+            { primitiveDecimal: false, extendedTypes: JSONZ.ExtendedTypeMode.AS_FUNCTIONS }),
+          "_Decimal('2.718281828459045')");
         });
 
         it('stringifies bigdecimal values as type containers', () => {
           assert.strictEqual(JSONZ.stringify(
             big.toBigDecimal('2.718281828459045'),
-            {primitiveBigDecimal: false, extendedTypes: JSONZ.ExtendedTypeMode.AS_OBJECTS}),
+            { primitiveBigDecimal: false, extendedTypes: JSONZ.ExtendedTypeMode.AS_OBJECTS }),
           "{_$_:'BigDecimal',_$_value:'2.718281828459045'}");
         });
       });
@@ -294,7 +309,8 @@ describe('JSONZ', () => {
       });
 
       it('stringifies with backtick quoting', () => {
-        assert.strictEqual(JSONZ.stringify(`'"`), `\`'"\``);
+        assert.strictEqual(JSONZ.stringify(`'"$-{`), `\`'"$-{\``);
+        assert.strictEqual(JSONZ.stringify(`'"$\{`), `\`'"$\\{\``);
       });
 
       it('stringifies escaped single quotes', () => {
@@ -314,52 +330,50 @@ describe('JSONZ', () => {
       });
 
       it('stringifies String objects', () => {
-        // eslint-disable-next-line no-new-wrappers
-        // noinspection JSPrimitiveTypeWrapperUsage
         assert.strictEqual(JSONZ.stringify(new String('abc')), "'abc'");
       });
     });
 
     it('stringifies using built-in toJSON methods', () => {
-      assert.strictEqual(JSONZ.stringify(new Date('2016-01-01T00:00:00.000Z'), {extendedTypes: JSONZ.ExtendedTypeMode.OFF}),
+      assert.strictEqual(JSONZ.stringify(new Date('2016-01-01T00:00:00.000Z'), { extendedTypes: JSONZ.ExtendedTypeMode.OFF }),
         "'2016-01-01T00:00:00.000Z'");
     });
 
     it('stringifies using user defined toJSON methods', () => {
-      function C() {}
-      Object.assign(C.prototype, {toJSON() { return {a: 1, b: 2}; }});
-      assert.strictEqual(JSONZ.stringify(new C(), {extendedTypes: JSONZ.ExtendedTypeMode.OFF}), '{a:1,b:2}');
+      function C() { }
+      Object.assign(C.prototype, { toJSON() { return { a: 1, b: 2 }; } });
+      assert.strictEqual(JSONZ.stringify(new C(), { extendedTypes: JSONZ.ExtendedTypeMode.OFF }), '{a:1,b:2}');
     });
 
     it('stringifies using user defined toJSONZ methods, with toJSONZ having priority over toJSON', () => {
       function C() {}
-      Object.assign(C.prototype, {toJSON() { return {a: 1}; }, toJSONZ() { return {a: 1, b: 2}; }});
+      Object.assign(C.prototype, { toJSON() { return { a: 1 }; }, toJSONZ() { return { a: 1, b: 2 }; } });
       assert.strictEqual(JSONZ.stringify(new C()), '{a:1,b:2}');
     });
 
     it('stringifies using user defined toJSON(key) methods', () => {
       function C() {}
-      Object.assign(C.prototype, {toJSON(key) { return (key === 'a') ? 1 : 2; }});
-      assert.strictEqual(JSONZ.stringify({a: new C(), b: new C()}), '{a:1,b:2}');
+      Object.assign(C.prototype, { toJSON(key) { return (key === 'a') ? 1 : 2; } });
+      assert.strictEqual(JSONZ.stringify({ a: new C(), b: new C() }), '{a:1,b:2}');
     });
 
     it('stringifies using toJSONZ methods', () => {
       function C() {}
-      Object.assign(C.prototype, {toJSONZ() { return {a: 1, b: 2}; }});
+      Object.assign(C.prototype, { toJSONZ() { return { a: 1, b: 2 }; } });
       assert.strictEqual(JSONZ.stringify(new C()), '{a:1,b:2}');
     });
 
     it('stringifies using toJSONZ(key) methods', () => {
       function C() {}
-      Object.assign(C.prototype, {toJSONZ(key) { return (key === 'a') ? 1 : 2; }});
-      assert.strictEqual(JSONZ.stringify({a: new C(), b: new C()}), '{a:1,b:2}');
+      Object.assign(C.prototype, { toJSONZ(key) { return (key === 'a') ? 1 : 2; } });
+      assert.strictEqual(JSONZ.stringify({ a: new C(), b: new C() }), '{a:1,b:2}');
     });
 
     it('calls toJSONZ instead of toJSON if both are defined', () => {
       function C() {}
       Object.assign(C.prototype, {
-        toJSON() { return {a: 1, b: 2}; },
-        toJSONZ() { return {a: 2, b: 2}; },
+        toJSON() { return { a: 1, b: 2 }; },
+        toJSONZ() { return { a: 2, b: 2 }; }
       });
       assert.strictEqual(JSONZ.stringify(new C()), '{a:2,b:2}');
     });
@@ -367,13 +381,13 @@ describe('JSONZ', () => {
     it('throws on circular objects', () => {
       const a = {};
       a.a = a;
-      assert.throws(() => { JSONZ.stringify(a); }, TypeError, 'Converting circular structure to JSONZ');
+      assert.throws(() => { JSONZ.stringify(a); }, TypeError, 'Converting circular structure to JSON-Z');
     });
 
     it('throws on circular arrays', () => {
       const a = [];
       a[0] = a;
-      assert.throws(() => { JSONZ.stringify(a); }, TypeError, 'Converting circular structure to JSONZ');
+      assert.throws(() => { JSONZ.stringify(a); }, TypeError, 'Converting circular structure to JSON-Z');
     });
   });
 
@@ -415,7 +429,7 @@ describe('JSONZ', () => {
     });
 
     it('indents with trailing comma in arrays', () => {
-      assert.strictEqual(JSONZ.stringify([1], {trailingComma: true, space: 2}), '[\n  1,\n]');
+      assert.strictEqual(JSONZ.stringify([1], { trailingComma: true, space: 2 }), '[\n  1,\n]');
     });
 
     it('indents in nested arrays', () => {
@@ -423,62 +437,56 @@ describe('JSONZ', () => {
     });
 
     it('indents in objects', () => {
-      assert.strictEqual(JSONZ.stringify({a: 1}, null, 2), '{\n  a: 1\n}');
+      assert.strictEqual(JSONZ.stringify({ a: 1 }, null, 2), '{\n  a: 1\n}');
     });
 
     it('indents with trailing comma in objects', () => {
-      assert.strictEqual(JSONZ.stringify({a: 1}, {trailingComma: true, space: 2}), '{\n  a: 1,\n}');
+      assert.strictEqual(JSONZ.stringify({ a: 1 }, { trailingComma: true, space: 2 }), '{\n  a: 1,\n}');
     });
 
     it('indents in nested objects', () => {
-      assert.strictEqual(JSONZ.stringify({a: {b: 2}}, null, 2), '{\n  a: {\n    b: 2\n  }\n}');
+      assert.strictEqual(JSONZ.stringify({ a: { b: 2 } }, null, 2), '{\n  a: {\n    b: 2\n  }\n}');
     });
 
     it('accepts Number objects', () => {
-      // eslint-disable-next-line no-new-wrappers
-      // noinspection JSPrimitiveTypeWrapperUsage
       assert.strictEqual(JSONZ.stringify([1], null, new Number(2)), '[\n  1\n]');
     });
 
     it('accepts String objects', () => {
-      // eslint-disable-next-line no-new-wrappers
-      // noinspection JSPrimitiveTypeWrapperUsage
       assert.strictEqual(JSONZ.stringify([1], null, new String('\t')), '[\n\t1\n]');
     });
   });
 
   describe('#stringify(value, replacer)', () => {
     it('filters keys when an array is provided', () => {
-      assert.strictEqual(JSONZ.stringify({a: 1, b: 2, 3: 3}, ['a', 3]), "{a:1,'3':3}");
+      assert.strictEqual(JSONZ.stringify({ a: 1, b: 2, 3: 3 }, ['a', 3]), "{a:1,'3':3}");
     });
 
     it('only filters string and number keys when an array is provided', () => {
-      assert.strictEqual(JSONZ.stringify({a: 1, b: 2, 3: 3, false: 4}, ['a', 3, false]), "{a:1,'3':3}");
+      assert.strictEqual(JSONZ.stringify({ a: 1, b: 2, 3: 3, false: 4 }, ['a', 3, false]), "{a:1,'3':3}");
     });
 
     it('accepts String and Number objects when an array is provided', () => {
-      // eslint-disable-next-line no-new-wrappers
-      // noinspection JSPrimitiveTypeWrapperUsage,JSPrimitiveTypeWrapperUsage
-      assert.strictEqual(JSONZ.stringify({a: 1, b: 2, 3: 3}, [new String('a'), new Number(3)]), "{a:1,'3':3}");
+      assert.strictEqual(JSONZ.stringify({ a: 1, b: 2, 3: 3 }, [new String('a'), new Number(3)]), "{a:1,'3':3}");
     });
 
     it('replaces values when a function is provided', () => {
       assert.strictEqual(
-        JSONZ.stringify({a: 1, b: 2}, (key, value) => (key === 'a') ? 2 : value),
+        JSONZ.stringify({ a: 1, b: 2 }, (key, value) => (key === 'a') ? 2 : value),
         '{a:2,b:2}'
       );
     });
 
     it('deletes object values when a replacer returns DELETE', () => {
       assert.strictEqual(
-        JSONZ.stringify({a: 1, b: 2}, (key, value) => (key === 'b') ? JSONZ.DELETE : value),
+        JSONZ.stringify({ a: 1, b: 2 }, (key, value) => (key === 'b') ? JSONZ.DELETE : value),
         '{a:1}'
       );
     });
 
     it('can transform object values into undefined values with replacer', () => {
       assert.strictEqual(
-        JSONZ.stringify({a: 1, b: 2}, (key, value) => (key === 'b') ? undefined : value),
+        JSONZ.stringify({ a: 1, b: 2 }, (key, value) => (key === 'b') ? undefined : value),
         '{a:1,b:undefined}'
       );
     });
@@ -487,6 +495,13 @@ describe('JSONZ', () => {
       assert.strictEqual(
         JSONZ.stringify([1, 77, 3], (key, value) => (value === 77) ? JSONZ.DELETE : value),
         '[1,,3]'
+      );
+    });
+
+    it('replaces array item with `undefined`', () => {
+      assert.strictEqual(
+        JSONZ.stringify([1, 77, 3], (key, value) => (value === 77) ? JSONZ.UNDEFINED : value),
+        '[1,undefined,3]'
       );
     });
 
@@ -499,14 +514,14 @@ describe('JSONZ', () => {
 
     it('sets `this` to the parent value', () => {
       assert.strictEqual(
-        JSONZ.stringify({a: {b: 1}}, function (k, v) { return (k === 'b' && this.b) ? 2 : v; }),
+        JSONZ.stringify({ a: { b: 1 } }, function (k, v) { return (k === 'b' && this.b) ? 2 : v; }),
         '{a:{b:2}}'
       );
     });
 
     it('is called after toJSON', () => {
       function C() {}
-      Object.assign(C.prototype, {toJSON() { return {a: 1, b: 2}; }});
+      Object.assign(C.prototype, { toJSON() { return { a: 1, b: 2 }; } });
       assert.strictEqual(
         JSONZ.stringify(new C(), (key, value) => (key === 'a') ? 2 : value),
         '{a:2,b:2}'
@@ -515,7 +530,7 @@ describe('JSONZ', () => {
 
     it('is called after toJSONZ', () => {
       function C() {}
-      Object.assign(C.prototype, {toJSONZ() { return {a: 1, b: 2}; }});
+      Object.assign(C.prototype, { toJSONZ() { return { a: 1, b: 2 }; } });
       assert.strictEqual(
         JSONZ.stringify(new C(), (key, value) => (key === 'a') ? 2 : value),
         '{a:2,b:2}'
@@ -524,7 +539,7 @@ describe('JSONZ', () => {
 
     it('does not affect space when calls are nested', () => {
       assert.strictEqual(
-        JSONZ.stringify({a: 1}, (key, value) => {
+        JSONZ.stringify({ a: 1 }, (key, value) => {
           JSONZ.stringify({}, null, 4);
           return value;
         }, 2),
@@ -535,49 +550,49 @@ describe('JSONZ', () => {
 
   describe('#stringify(value, options)', () => {
     it('accepts replacer as an option', () => {
-      assert.strictEqual(JSONZ.stringify({a: 1, b: 2, 3: 3}, {replacer: ['a', 3]}), "{a:1,'3':3}");
+      assert.strictEqual(JSONZ.stringify({ a: 1, b: 2, 3: 3 }, { replacer: ['a', 3] }), "{a:1,'3':3}");
     });
 
     it('accepts space as an option', () => {
-      assert.strictEqual(JSONZ.stringify([1], {space: 2}), '[\n  1\n]');
+      assert.strictEqual(JSONZ.stringify([1], { space: 2 }), '[\n  1\n]');
     });
 
     it('accepts trailingComma as an option', () => {
-      assert.strictEqual(JSONZ.stringify([1], {trailingComma: true, space: 2}), '[\n  1,\n]');
+      assert.strictEqual(JSONZ.stringify([1], { trailingComma: true, space: 2 }), '[\n  1,\n]');
     });
   });
 
   describe('#stringify(value, {quote})', () => {
     it('uses double quotes if provided', () => {
-      assert.strictEqual(JSONZ.stringify({'a"': '1"'}, {quote: '"'}), '{"a\\"":"1\\""}');
+      assert.strictEqual(JSONZ.stringify({ 'a"': '1"' }, { quote: '"' }), '{"a\\"":"1\\""}');
     });
 
     it('uses single quotes if provided', () => {
-      assert.strictEqual(JSONZ.stringify({"a'": "1'"}, {quote: "'"}), "{'a\\'':'1\\''}");
+      assert.strictEqual(JSONZ.stringify({ "a'": "1'" }, { quote: "'" }), "{'a\\'':'1\\''}");
     });
   });
 
   describe('global stringify options', () => {
     it('formats mostly like standard JSON using default options', () => {
       JSONZ.resetOptions();
-      assert.strictEqual(JSONZ.stringify({a: 1}), '{"a":1}');
+      assert.strictEqual(JSONZ.stringify({ a: 1 }), '{"a":1}');
     });
 
     it('setting null global options has no effect', () => {
       JSONZ.setOptions(null);
-      assert.strictEqual(JSONZ.stringify({a: 1}), '{"a":1}');
+      assert.strictEqual(JSONZ.stringify({ a: 1 }), '{"a":1}');
     });
 
     it('global options work', () => {
       JSONZ.setOptions({
         quote: JSONZ.Quote.PREFER_SINGLE,
         space: '  ',
-        trailingComma: true,
+        trailingComma: true
       });
-      assert.strictEqual(JSONZ.stringify({a: 1, b: [1, 2]}), "{\n  'a': 1,\n  'b': [\n    1,\n    2,\n  ],\n}");
+      assert.strictEqual(JSONZ.stringify({ a: 1, b: [1, 2] }), "{\n  'a': 1,\n  'b': [\n    1,\n    2,\n  ],\n}");
 
-      JSONZ.setOptions({quote: JSONZ.Quote.PREFER_DOUBLE});
-      assert.strictEqual(JSONZ.stringify({a: 1, b: [1, 2]}), '{\n  "a": 1,\n  "b": [\n    1,\n    2,\n  ],\n}');
+      JSONZ.setOptions({ quote: JSONZ.Quote.PREFER_DOUBLE });
+      assert.strictEqual(JSONZ.stringify({ a: 1, b: [1, 2] }), '{\n  "a": 1,\n  "b": [\n    1,\n    2,\n  ],\n}');
     });
 
     it('option sets work', () => {
@@ -585,20 +600,20 @@ describe('JSONZ', () => {
       const bd = big.toBigDecimal(1);
 
       JSONZ.setOptions(JSONZ.OptionSet.MAX_COMPATIBILITY);
-      assert.strictEqual(JSONZ.stringify({a: 1, b: NaN, c: bi, d: bd}), '{"a":1,"b":null,"c":"1","d":"1"}');
+      assert.strictEqual(JSONZ.stringify({ a: 1, b: NaN, c: bi, d: bd }), '{"a":1,"b":null,"c":"1","d":"1"}');
 
       JSONZ.setOptions(JSONZ.OptionSet.RELAXED);
-      assert.strictEqual(JSONZ.stringify({a: 1, b: NaN, c: bi, d: bd}), "{a:1,b:NaN,c:1n,d:'1'}");
+      assert.strictEqual(JSONZ.stringify({ a: 1, b: NaN, c: bi, d: bd }), "{a:1,b:NaN,c:1n,d:'1'}");
 
       JSONZ.setOptions(JSONZ.OptionSet.THE_WORKS);
-      assert.strictEqual(JSONZ.stringify({a: 1, b: NaN, c: bi, d: bd}), '{a:1,b:NaN,c:1n,d:1m}');
+      assert.strictEqual(JSONZ.stringify({ a: 1, b: NaN, c: bi, d: bd }), '{a:1,b:NaN,c:1n,d:1m}');
 
-      JSONZ.setOptions(JSONZ.OptionSet.THE_WORKS, {space: 1});
-      assert.strictEqual(JSONZ.stringify({a: 1, b: NaN, c: bi, d: bd}), '{a: 1, b: NaN, c: 1n, d: 1m}');
-      assert.strictEqual(JSONZ.stringify({a: 1, b: NaN, c: bi, d: bd}, JSONZ.OptionSet.MAX_COMPATIBILITY),
+      JSONZ.setOptions(JSONZ.OptionSet.THE_WORKS, { space: 1 });
+      assert.strictEqual(JSONZ.stringify({ a: 1, b: NaN, c: bi, d: bd }), '{a: 1, b: NaN, c: 1n, d: 1m}');
+      assert.strictEqual(JSONZ.stringify({ a: 1, b: NaN, c: bi, d: bd }, JSONZ.OptionSet.MAX_COMPATIBILITY),
         '{"a":1,"b":null,"c":"1","d":"1"}');
       JSONZ.setOptions(-1); // Invalid option
-      assert.strictEqual(JSONZ.stringify({a: 1, b: NaN, c: bi, d: bd}), '{a: 1, b: NaN, c: 1n, d: 1m}');
+      assert.strictEqual(JSONZ.stringify({ a: 1, b: NaN, c: bi, d: bd }), '{a: 1, b: NaN, c: 1n, d: 1m}');
 
       assert.ok(optionsMgr.getOptionSet(JSONZ.OptionSet.RELAXED));
       assert.deepStrictEqual(optionsMgr.getOptionSet(-1), {});
@@ -614,20 +629,20 @@ describe('JSONZ', () => {
       this.value = n * 2;
     }
 
-    JSONZ.setOptions({space: 0});
+    JSONZ.setOptions({ space: 0 });
 
     JSONZ.addTypeHandler({
       name: 'half',
       test: obj => obj instanceof Half,
       creator: value => new Half(value),
-      serializer: instance => (instance.value * 2),
+      serializer: instance => (instance.value * 2)
     });
 
     JSONZ.addTypeHandler({
       name: 'double',
       test: obj => obj instanceof Double,
       creator: value => new Double(value),
-      serializer: instance => (instance.value / 2),
+      serializer: instance => (instance.value / 2)
     });
 
     assert.strictEqual(
@@ -664,12 +679,19 @@ describe('JSONZ', () => {
     assert.strictEqual(global._Date, undefined);
   });
 
-  if (big.hasBigDecimal() && big.hasFixedBigDecimal()) {
-    it('decimal from two different classes', () => {
-      JSONZ.setFixedBigDecimal(FixedDecimalAlt);
-      assert.strictEqual(JSONZ.stringify(Decimal('1.01')), '1.01m', 'parses decimal');
-      assert.strictEqual(JSONZ.stringify(FixedDecimalAlt('2.02')), '2.02d', 'parses fixed decimal');
-      JSONZ.setFixedBigDecimal(FixedDecimal);
+  if (big.hasBigDecimal() && big.hasDecimal()) {
+    it('decimal handling with different classes', () => {
+      JSONZ.setDecimal(DecimalAlt);
+      assert.strictEqual(JSONZ.stringify(new BigDecimal('1.01')), '1.01m', 'parses decimal');
+      assert.strictEqual(JSONZ.stringify(new BigDecimal('-0')), '-0m', 'handles alt negative zero decimal');
+      assert.strictEqual(JSONZ.stringify(DecimalAlt('2.02')), '2.02d', 'parses fixed decimal');
+      JSONZ.setBigDecimal(BigDecimalAlt);
+      assert.strictEqual(JSONZ.stringify(new BigDecimalAlt('1.01')), '1.01m', 'parses decimal');
+      // decimal.js-light doesn't do negative zero
+      assert.strictEqual(JSONZ.stringify(DecimalAlt('2.02')), '2.02d', 'parses fixed decimal');
+      JSONZ.setDecimal(Decimal);
+      JSONZ.setBigDecimal(BigDecimal);
+      assert.strictEqual(JSONZ.stringify(new Decimal('-0')), '-0d', 'handles negative zero decimal');
     });
   }
 });

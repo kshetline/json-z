@@ -1,9 +1,15 @@
 {
   "root": true,
+  "parser": "@typescript-eslint/parser",
+  "plugins": ["chai-friendly", "@typescript-eslint"],
   "extends": [
     "standard",
     "plugin:node/recommended"
   ],
+  "parserOptions": {
+    "sourceType": "module",
+    "ecmaVersion": 2023
+  },
   "rules": {
     "array-bracket-spacing": [
       "error",
@@ -16,7 +22,7 @@
     "brace-style": ["error", "stroustrup", { "allowSingleLine": true }],
     "comma-dangle": [
       "error",
-      "always-multiline"
+      "never"
     ],
     "indent": [
       "error",
@@ -24,9 +30,13 @@
       { "SwitchCase": 1 }
     ],
     "no-process-exit": "off",
+    "no-prototype-builtins": "off",
+    "node/no-unsupported-features/es-syntax": "off",
+    "no-unused-expressions": "off",
+    "chai-friendly/no-unused-expressions": "error",
     "object-curly-spacing": [
       "error",
-      "never"
+      "always"
     ],
     "prefer-const": "error",
     "semi": [
@@ -40,5 +50,15 @@
         "asyncArrow": "always"
       }
     ]
-  }
+  },
+  "overrides": [
+    {
+      "files": ["*.d.ts"],
+      "rules": {
+        "no-redeclare": "off",
+        "no-unused-vars": "off",
+        "@typescript-eslint/no-unused-vars": "off"
+      }
+    }
+  ]
 }
