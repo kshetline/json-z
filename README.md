@@ -3,7 +3,6 @@
 [![NPM Stats](https://nodei.co/npm/json-z.svg)](https://npmjs.org/package/json-z/)
 
 [![npm](https://img.shields.io/npm/v/json-z.svg)](https://npmjs.org/package/json-z/)
-[![Build Status](https://travis-ci.com/kshetline/json-z.svg?branch=master)][Build Status]
 [![Coverage Status](https://coveralls.io/repos/github/kshetline/json-z/badge.svg?branch=master)](https://coveralls.io/github/kshetline/json-z?branch=master)
 [![npm downloads](https://img.shields.io/npm/dm/json-z.svg)](https://npmjs.org/package/json-z/)
 [![npm bundle size](https://img.shields.io/bundlephobia/min/json-z.svg)](https://npmjs.org/package/json-z/)
