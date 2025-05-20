@@ -32,7 +32,7 @@ This JavaScript library is the official reference implementation for JSON-Z pars
 
 [JSON5]: https://json5.org/
 
-> _JSON purportedly should be pronounced like the name “Jason”, although I can’t break the habit of thinking about it as_ jay-SAHN _instead._
+> _JSON purportedly should be pronounced like the name “Jason”, although I can’t break the habit of thinking about it as_ JAY-sahn _instead._
 >
 >_I'm going to recommend that JSON-Z be pronounced_ jay-SANH-zee, _kind of like "Jumanji"._
 >
