@@ -95,6 +95,7 @@ The following features, which are not supported in standard JSON, have been adde
 - Replacer functions can return the special value `JSONZ.DELETE` to indicate that a slot in an array be left empty, creating a sparse array.
 - A global replacer function can be specified.
 - For the benefit of anonymous (arrow) functions, which do not have their own `this` as `functions` do, replacer functions are passed the holder of a key/value pair as a third argument to the function.
+- A replacer can return `JSONZ.LITERALLY_AS(`*string-value*`)` to specify [exactly how a given value will be stringified](#jsonzliterally_as).
 
 ### Reviver functions (JSON-Z specific differences)
 
@@ -399,6 +400,31 @@ This removes all user-added type handlers, and restores all built-in type handle
 ### JSONZ.restoreStandardTypeHandlers()
 
 This restores all built-in type handlers, leaving any user-added type handlers.
+
+### JSONZ.DELETE
+
+Return this value from a replacer function to delete an item from an object or to render a slot in an array as empty.
+
+### JSONZ.UNDEFINED
+
+Return this value from a replacer function (rather than returning `undefined` itself) to change a value to `undefined`.
+
+### JSONZ.LITERALLY_AS()
+
+Return `JSONZ.LITERALLY_AS(`*string-value*`)` from a replacer function to literally and explicitly specify how a particular value should be stringified. In this example:
+
+```javascript
+function showNumbersInHex(k, v) {
+  return typeof v === 'number' && isFinite(v) && !isNaN(v)
+         ? JSONZ.LITERALLY_AS((v < 0 ? '-' : '') +
+             '0x' + Math.abs(v).toString(16).toUpperCase())
+         : v;
+}
+
+JSONZ.stringify({ hexValue: 912559 }, showNumbersInHex)
+```
+
+...`stringify` with return `"{hexValue:0xDECAF}"` as a result.
 
 ### Node.js `require()` JSON-Z files
 
