@@ -1,3 +1,7 @@
+### 4.1.0
+
+* Added a new replacer function feature, `JSONZ.LITERALLY_AS`, allowing a replacer function to explicitly determine how a value will be rendered when stringified.
+
 ### 4.0.1
 
 Minor documentation tweak.
