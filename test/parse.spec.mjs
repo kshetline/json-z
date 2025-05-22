@@ -556,8 +556,8 @@ describe('JSONZ', () => {
 
 it('parse(text, reviver)', () => {
   expect(
-    JSONZ.parse('{a:1,b:2}', (k, v) => (k === 'a') ? 'revived' : v)).to.deep.equal(
-    { a: 'revived', b: 2 },
+    JSONZ.parse('{a:1,b:2,c:null}', (k, v) => (k === 'a') ? 'revived' : v)).to.deep.equal(
+    { a: 'revived', b: 2, c: null },
     'modifies property values'
   );
 

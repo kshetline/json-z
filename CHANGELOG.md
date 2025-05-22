@@ -1,3 +1,7 @@
+### 4.1.1
+
+* Fix NPE when reviver function encounters a null value.
+
 ### 4.1.0
 
 * Added a new replacer function feature, `JSONZ.LITERALLY_AS`, allowing a replacer function to explicitly determine how a value will be rendered when stringified.
