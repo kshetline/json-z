@@ -54,7 +54,7 @@ The following features, which are not supported in standard JSON, have been adde
 
 - Array elements may have a single trailing comma.
 - **Arrays may be sparse**, e.g. `[1, , 3, 4]`.
-- **If arrays have string keys with associated values (not recommended!)**, e.g. `[1, 2, 3, #frequency: "Kenneth"]`, **such key/value pairs can be parsed and optionally stringified. This also applies to numeric keys which are negative or non-integer. (The** `#` **is not part of the key, it simply precedes any explicitly keyed value in an array.) Key/value pairs such as these are normally hidden, and do not affect the `length` property of an array.**
+- **If arrays have string keys with associated values (not recommended!)**, e.g. `[1, 2, 3, #frequency: "Kenneth"]`, **such key/value pairs can be parsed and optionally stringified. This also applies to numeric keys which are negative or non-integer. (The** `#` **is not part of the key, it simply precedes any explicitly keyed value in an array.) Key/value pairs such as these are normally hidden, and do not affect the** `length` **property of an array.**
 
 ### Strings
 
@@ -71,7 +71,7 @@ The following features, which are not supported in standard JSON, have been adde
 - Numbers may be [IEEE 754] positive infinity (`Infinity`), negative infinity (`-Infinity`), or `NaN`.
 - Numbers may begin with an explicit plus sign.
 - **Negative zero** (`-0`) **is parsed and stringified as distinct from positive 0**.
-- **Numbers may be `BigInt` values by appending a lowercase** `n` **to the end of an integer value, e.g. `-23888n`, or `9_223_372_036_854_775_807n`.**<br><br>
+- **Numbers may be** `BigInt` **values by appending a lowercase** `n` **to the end of an integer value, e.g.** `-23888n`**, or** `9_223_372_036_854_775_807n`**.**<br><br>
 `BigInt` values can be in decimal, hexadecimal, octal, or binary form. Exponential notation can also be used (e.g. `4.2E12n`) so long as the value, including its exponent, specifies an integer value.
 - **Numbers may be arbitrary precision decimal values by appending a lowercase** `m`, **e.g.** `3.1415926535897932384626433832795028841971693993751m`**.** `NaN_m`**,** `Infinity_m`**, and** `-Infinity_m` **can also be used.** (Using a third-party extended-precision library is necessary to take full advantage of this feature.)
 - **Numbers may be** [IEEE 754] **Decimal128 values by appending a lowercase** `d`, **e.g.** `2.718281828459045235360287471352662d`**.** `NaN_d`**,** `Infinity_d`**, and** `-Infinity_d` **can also be used.** (Using a third-party extended-precision library is necessary to take full advantage of this feature, with [proposal-decimal](https://www.npmjs.com/package/proposal-decimal) being recommended.)<br><br>_Note: Decimal math constants in JavaScript had been part of [a larger decimal math proposal](https://github.com/tc39/proposal-decimal) for future versions of JavaScript, but that particular feature from the proposal has been abandoned. JSON-Z support for such constants is now purely a convention of JSON-Z, with an `m` suffix for arbitrary precision decimal values, and `d` for fixed precision._
@@ -206,14 +206,16 @@ This works very much like [`JSON.parse`](https://developer.mozilla.org/en-US/doc
   - `reviveTypedContainers`: If `true` (the default is `false`), objects which take the form of an extended type container, e.g. `{"_$_": "Date", "_$_value": "2019-07-28T08:49:58.202Z"}`, can be revived as specific object classes, such as `Date`.
   - `reviver`: An alternate means of providing a reviver function when `options` is the second argument of `parse`.
 
-A JSON-Z reviver function is a callback that works much like a standard `JSON.parse` [reviver function](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON/parse#reviver). The third argument passed to the callback *might* be different from what a `JSON.parse` reviver receives. A forth argument clarifies that difference.
+A JSON-Z reviver function is a callback that works much like the not-quite-yet-standard `JSON.parse` reviver function from this proposal: https://github.com/tc39/proposal-json-parse-with-source, a proposal which has already been widely implemented.
 
-> reviver(key, value, extra, noContext)
+The third argument passed to a JSON-Z reviver *might* be different from what a `JSON.parse` reviver receives, according to the above proposal. There is a forth argument that clarifies the difference.
+
+> `reviver(key, value[, extra[, noContext]])`
 > 
-> - key: The object key (or array index) of the value being parsed. The key is an empty string if the value is the root value.
-> - value: A value as originally parsed, which should be returned by the reviver as-is if the reviver is not to modify the original.
-> - extra: This is either a `context` object containing a `source` string, as described in the link above, or the `holder` of the value, i.e. the object or array, if any, which contains the given `value`.
-> - noContext: if `true`, `extra` is the object or array which contains the current key/value pair. Other, `value` is a primitive value, and `extra` is like the standard `context` object containing a `source` string, but also containing a `holder` value as well.
+> - `key`: The object key (or array index) of the value being parsed. The `key` is an empty string if the `value` is the root value.
+> - `value`: A value as originally parsed, which should be returned by the reviver as-is if the reviver is not modifying the original value.
+> - `extra`: This is either a `context` object containing a `source` string, as described at the link above, or the holder of the value, i.e., the object or array, if any, which contains the given key/value pair.
+> - `noContext`: if `true`, `extra` is the object or array which contains the current key/value pair. Otherwise, `value` is a primitive value, and `extra` functions like the (nearly) standard `context` object containing a `source` string, but also containing a `holder` value as well.
 > 
 > Returns: Either the original `value`, or a modified value.
 
@@ -237,8 +239,9 @@ This works very much like [`JSON.stringify`](https://developer.mozilla.org/en-US
 - `value`: The value to convert to a JSON-Z string.
 - `replacer`: A function which alters the behavior of the stringification process, or an array of String and Number objects that serve as an allowlist for selecting/filtering the properties of the value object to be included in the JSON-Z string. If this value is null or not provided, all properties of the object are included in the resulting JSON-Z string.
 
-  When using the standard `JSON.stringify()`, a replacer function is called with two arguments: `key` and `value`. JSON-Z adds a third argument, `holder`. This value is already available to standard `function`s as `this`, but `this` won't be bound to `holder` when using an anonymous (arrow) function as a replacer, so the third argument (which can be ignored if not needed) provides alternative access to the `holder` value.
-- `space`: A string or number used to insert whitespace into the output JSON-Z string for readability purposes. If this is a number, it indicates the number of space characters to use as whitespace; this number is capped at 10. Values less than 1 indicate that no space should be used. If this is a string, the string (or the first 10 characters of the string, if it's longer than that) is used as white space. A single space adds white space without adding indentation. If this parameter is not provided (or is null), no whitespace is added. If indenting white space is used, trailing commas can optionally appear in objects and arrays.
+  When using the standard `JSON.stringify()`, a replacer function is called with two arguments: `key` and `value`. JSON-Z adds a third argument, `holder`. This value is already available to standard replacer `function`s as `this`, but `this` won't be bound the holder when using an anonymous (arrow) function as a replacer. The JSON-Z third argument (which can be ignored if not needed) provides alternative access to the holder value.
+> `replacer(key, value[, holder])`
+- `space`: A string or number used to insert whitespace into the output JSON-Z string for readability purposes. If this is a number, it indicates the number of space characters to use as whitespace; this number is capped at 10. Values less than 1 indicate that no space should be used. If `space` is a string, that string (or the first 10 characters of the string if it's longer) is used as white space. A single space adds white space without adding indentation. If this parameter is not provided (or is null), no whitespace is added. If indenting white space is used, trailing commas can optionally appear in objects and arrays.
 - `options`: This can either be an `OptionSet` value (see [below](#jsonzsetoptionsoptions-additionaloptions)), or an object with the following properties:
   - `extendedPrimitives`: If `true` (the default is `false`) this enables direct stringification of `Infinity`, `-Infinity`, `NaN`, and `undefined`. Otherwise, these values become `null`.
   - `extendedTypes`: If `JSONZ.ExtendedTypeMode.AS_FUNCTIONS` or `JSONZ.ExtendedTypeMode.AS_OBJECTS` (the default is `JSONZ.ExtendedTypeMode.OFF`), this enables special representation of additional data types, such as `_Date("2019-07-28T08:49:58.202Z")`, which can be parsed directly as a JavaScript `Date` object, or `{"_$_": "Date", "_$_value": "2019-07-28T08:49:58.202Z"}`, which can be automatically rendered as a `Date` object by a built-in replacer.

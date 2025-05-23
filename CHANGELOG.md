@@ -1,3 +1,7 @@
+### 4.2.1
+
+* Documentation-only update.
+
 ### 4.2.0
 
 * Provide reviver callbacks with the source text of primitive values.
