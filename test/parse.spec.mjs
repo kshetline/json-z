@@ -651,8 +651,8 @@ it('parse(text, reviver) special cases', () => {
 
   expect(
     JSONZ.stringify(JSONZ.parse('[11,+11.,13,"q",`q`]',
-      (k, v, context, hasContext) => {
-        if (hasContext) {
+      (k, v, context, noContext) => {
+        if (!noContext) {
           if (context.source === '+11.') {
             return 12;
           }
@@ -664,7 +664,7 @@ it('parse(text, reviver) special cases', () => {
         return v;
       }))).to.equal(
     "[11,12,13,'q','r']",
-    'should not modify BigDecimal values'
+    'should process context.source for primitive values'
   );
 });
 

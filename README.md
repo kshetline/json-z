@@ -73,8 +73,8 @@ The following features, which are not supported in standard JSON, have been adde
 - **Negative zero** (`-0`) **is parsed and stringified as distinct from positive 0**.
 - **Numbers may be `BigInt` values by appending a lowercase** `n` **to the end of an integer value, e.g. `-23888n`, or `9_223_372_036_854_775_807n`.**<br><br>
 `BigInt` values can be in decimal, hexadecimal, octal, or binary form. Exponential notation can also be used (e.g. `4.2E12n`) so long as the value, including its exponent, specifies an integer value.
-- **Numbers may be arbitrary precision decimal values by appending a lowercase** `m`, **e.g. `3.1415926535897932384626433832795028841971693993751m`. `NaN_m`, `Infinity_m`, and `-Infinity_m` can also be used.** (Using a third-party extended-precision library is necessary to take full advantage of this feature.)
-- **Numbers may be** [IEEE 754] **Decimal128 values by appending a lowercase** `d`, **e.g. `2.718281828459045235360287471352662d`. `NaN_d`, `Infinity_d`, and `-Infinity_d` can also be used.** (Using a third-party extended-precision library is necessary to take full advantage of this feature, with [proposal-decimal](https://www.npmjs.com/package/proposal-decimal) being recommended.)<br><br>_Note: Decimal math constants in JavaScript had been part of [a larger decimal math proposal](https://github.com/tc39/proposal-decimal) for future versions of JavaScript, but that particular feature from the proposal has been abandoned. JSON-Z support for such constants is now purely a convention of JSON-Z, with an `m` suffix for arbitrary precision decimal values, and `d` for fixed precision._
+- **Numbers may be arbitrary precision decimal values by appending a lowercase** `m`, **e.g.** `3.1415926535897932384626433832795028841971693993751m`**.** `NaN_m`**,** `Infinity_m`**, and** `-Infinity_m` **can also be used.** (Using a third-party extended-precision library is necessary to take full advantage of this feature.)
+- **Numbers may be** [IEEE 754] **Decimal128 values by appending a lowercase** `d`, **e.g.** `2.718281828459045235360287471352662d`**.** `NaN_d`**,** `Infinity_d`**, and** `-Infinity_d` **can also be used.** (Using a third-party extended-precision library is necessary to take full advantage of this feature, with [proposal-decimal](https://www.npmjs.com/package/proposal-decimal) being recommended.)<br><br>_Note: Decimal math constants in JavaScript had been part of [a larger decimal math proposal](https://github.com/tc39/proposal-decimal) for future versions of JavaScript, but that particular feature from the proposal has been abandoned. JSON-Z support for such constants is now purely a convention of JSON-Z, with an `m` suffix for arbitrary precision decimal values, and `d` for fixed precision._
 
 ### Comments
 
@@ -100,7 +100,7 @@ The following features, which are not supported in standard JSON, have been adde
 ### Reviver functions (JSON-Z specific differences)
 
 - A global reviver function can be specified.
-- For the benefit of anonymous (arrow) functions, which do not have their own `this`, reviver functions are passed the holder of a key/value pair as a third argument to the function.
+- For the benefit of anonymous (arrow) functions, which do not have their own `this`, reviver functions are passed the holder of a key/value pair as, or along with, the third argument to the function.
 
 ### Extended types (JSON-Z specific)
 
@@ -196,7 +196,7 @@ _Note: One important change from JSON5 is that the `JSONZ.parse()` function is r
 
     JSONZ.parse(text[, reviver][, options])
 
-This works very much like [`JSON.parse`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON/parse), with the addition of the `options` parameter, and that the `reviver` function is passed a third argument, `holder`, in addition to `key` and `value`, which lets the `reviver` know the array or object that contains the value being examined.
+This works very much like [`JSON.parse`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON/parse), but with the addition of an `options` parameter, which can be passed along with, or instead of, the `reviver` parameter.
 
 #### Parameters
 
@@ -204,7 +204,18 @@ This works very much like [`JSON.parse`](https://developer.mozilla.org/en-US/doc
 - `reviver`: If a function, this prescribes how the value originally produced by parsing is transformed, before being returned.
 - `options`: An object with the following properties:
   - `reviveTypedContainers`: If `true` (the default is `false`), objects which take the form of an extended type container, e.g. `{"_$_": "Date", "_$_value": "2019-07-28T08:49:58.202Z"}`, can be revived as specific object classes, such as `Date`.
-  - `reviver`: An alternate means of providing a reviver function.
+  - `reviver`: An alternate means of providing a reviver function when `options` is the second argument of `parse`.
+
+A JSON-Z reviver function is a callback that works much like a standard `JSON.parse` [reviver function](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON/parse#reviver). The third argument passed to the callback *might* be different from what a `JSON.parse` reviver receives. A forth argument clarifies that difference.
+
+> reviver(key, value, extra, noContext)
+> 
+> - key: The object key (or array index) of the value being parsed. The key is an empty string if the value is the root value.
+> - value: A value as originally parsed, which should be returned by the reviver as-is if the reviver is not to modify the original.
+> - extra: This is either a `context` object containing a `source` string, as described in the link above, or the `holder` of the value, i.e. the object or array, if any, which contains the given `value`.
+> - noContext: if `true`, `extra` is the object or array which contains the current key/value pair. Other, `value` is a primitive value, and `extra` is like the standard `context` object containing a `source` string, but also containing a `holder` value as well.
+> 
+> Returns: Either the original `value`, or a modified value.
 
 #### Return value
 
