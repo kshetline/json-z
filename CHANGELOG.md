@@ -1,3 +1,8 @@
+### 4.2.0
+
+* Provide reviver callbacks with the source text of primitive values.
+* Make sure reviver callbacks are not called for the internal components of decimal or big decimal objects.
+
 ### 4.1.1
 
 * Fix NPE when reviver function encounters a null value.
