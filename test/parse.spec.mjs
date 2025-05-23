@@ -16,6 +16,7 @@ JSONZ.setBigDecimal(BigDecimal);
 JSONZ.setParseOptions({
   reviveTypedContainers: true
 });
+JSONZ.setOptions(JSONZ.OptionSet.THE_WORKS);
 
 function equalBigNumber(a, b) {
   if (a === b) {
@@ -314,7 +315,7 @@ describe('JSONZ', () => {
     expect(equalBigNumber(JSONZ.parse('-Infinity_m'), BigDecimal(-Infinity))).to.be.ok; // parses -Infinity_m
 
     JSONZ.setBigDecimal(null);
-    expect(big.getBigDecimalType() === 'numeric').to.be.ok; // can disable big decimal support
+    expect(big.getBigDecimalType() === 'number').to.be.ok; // can disable big decimal support
     expect(typeof JSONZ.parse('4m') === 'number').to.be.ok; // can parse big decimal as primitive number
     JSONZ.setBigDecimal(BigDecimal);
   });
@@ -349,7 +350,7 @@ describe('JSONZ', () => {
     expect(equalBigNumber(JSONZ.parse('-Infinity_d'), new Decimal(-Infinity))).to.be.ok; // parses -Infinity_d
 
     JSONZ.setDecimal(null);
-    expect(big.getDecimalType() === 'numeric').to.be.ok; // can disable fixed big decimal support
+    expect(big.getDecimalType() === 'number').to.be.ok; // can disable fixed big decimal support
     expect(typeof JSONZ.parse('4d') === 'number').to.be.ok; // can parse fixed big decimal as primitive number
     JSONZ.setDecimal(Decimal);
   });
@@ -632,6 +633,38 @@ it('parse(text, reviver)', () => {
     JSONZ.parse('{a:{b:"true"}}', function (k, v) { return (k === 'b') ? JSONZ.parse(v) : v; })).to.deep.equal(
     { a: { b: true } },
     'make sure parse is reëntrant'
+  );
+});
+
+it('parse(text, reviver) special cases', () => {
+  expect(
+    JSONZ.stringify(JSONZ.parse('{a:12.34d}', (k, v) => typeof v === 'number' ? 88 : v))).to.equal(
+    '{a:12.34d}',
+    'should not modify Decimal values'
+  );
+
+  expect(
+    JSONZ.stringify(JSONZ.parse('{a:56.78m}', (k, v) => typeof v === 'number' ? 88 : v))).to.equal(
+    '{a:56.78m}',
+    'should not modify BigDecimal values'
+  );
+
+  expect(
+    JSONZ.stringify(JSONZ.parse('[11,+11.,13,"q",`q`]',
+      (k, v, context, hasContext) => {
+        if (hasContext) {
+          if (context.source === '+11.') {
+            return 12;
+          }
+          else if (context.source === '`q`') {
+            return 'r';
+          }
+        }
+
+        return v;
+      }))).to.equal(
+    "[11,12,13,'q','r']",
+    'should not modify BigDecimal values'
   );
 });
 

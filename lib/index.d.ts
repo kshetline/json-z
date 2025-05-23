@@ -73,6 +73,8 @@ export function globalizeTypeHandlers(prefix?: string): void;
 export function removeGlobalizedTypeHandlers(): void;
 
 export const DELETE: Symbol;
+export const UNDEFINED: Symbol;
+export const LITERALLY_AS: (value: string) => any;
 
 export function hasBigDecimal(): boolean;
 
