@@ -1,3 +1,7 @@
+### 4.2.4
+
+* Fixed a reviver bug with quoted property names.
+
 ### 4.2.3
 
 * Fixed a reviver bug with non-primitive arguments of function types.
