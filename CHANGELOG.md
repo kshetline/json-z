@@ -1,6 +1,10 @@
+### 4.2.3
+
+* Fixed a reviver bug with non-primitive arguments of function types.
+
 ### 4.2.2
 
-* Fixed a couple of obscure replacer/reviver bugs.
+* Fixed a couple of bugs related to performing deletions of array/object elements via replacer or reviver functions.
 
 ### 4.2.1
 

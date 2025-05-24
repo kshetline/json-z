@@ -581,8 +581,8 @@ it('parse(text, reviver)', () => {
   );
 
   expect(
-    JSONZ.parse('{a:1,b:2,c:_BigInt(3)}', (k, v) => (k === 'a') ? JSONZ.UNDEFINED : v)).to.deep.equal(
-    { a: undefined, b: 2, c: 3n },
+    JSONZ.parse('{a:1,b:2,c:_BigInt(3),d:_Map([[4,5]])}', (k, v) => (k === 'a') ? JSONZ.UNDEFINED : v)).to.deep.equal(
+    { a: undefined, b: 2, c: 3n, d: new Map([[4, 5]]) },
     'replaces property values with `undefined`'
   );
 
