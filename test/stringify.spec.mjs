@@ -491,24 +491,34 @@ describe('stringify', () => {
       );
     });
 
-    it('deletes object values when a replacer returns DELETE', () => {
+    it('deletes object values when a replacer returns DELETE or `undefined`', () => {
       assert.strictEqual(
         JSONZ.stringify({ a: 1, b: 2 }, (key, value) => (key === 'b') ? JSONZ.DELETE : value),
+        '{a:1}'
+      );
+
+      assert.strictEqual(
+        JSONZ.stringify({ a: 1, b: 2, c: undefined }, (key, value) => (key && key !== 'a') ? undefined : value),
+        '{a:1,c:undefined}'
+      );
+
+      assert.strictEqual(
+        JSONZ.stringify({ a: 1, b: 2, c: undefined }, (key, value) => (key && key !== 'a') ? JSONZ.DELETE : value),
         '{a:1}'
       );
     });
 
     it('can transform object values into undefined values with replacer', () => {
       assert.strictEqual(
-        JSONZ.stringify({ a: 1, b: 2 }, (key, value) => (key === 'b') ? undefined : value),
+        JSONZ.stringify({ a: 1, b: 2 }, (key, value) => (key === 'b') ? JSONZ.UNDEFINED : value),
         '{a:1,b:undefined}'
       );
     });
 
     it('creates empty array slots when a replacer returns DELETE', () => {
       assert.strictEqual(
-        JSONZ.stringify([1, 77, 3], (key, value) => (value === 77) ? JSONZ.DELETE : value),
-        '[1,,3]'
+        JSONZ.stringify([1, 77, 3, undefined], (key, value) => (value === 77) ? JSONZ.DELETE : value),
+        '[1,,3,undefined]'
       );
     });
 
@@ -519,10 +529,30 @@ describe('stringify', () => {
       );
     });
 
-    it('can transform array values into undefined values with replacer', () => {
+    it('creates empty array slots when a replacer returns `undefined`, unless original value is `undefined`', () => {
       assert.strictEqual(
-        JSONZ.stringify([1, 77, 3], (key, value) => (value === 77) ? undefined : value),
-        '[1,undefined,3]'
+        JSONZ.stringify([1, 77, 3, undefined], (key, value) => (key > 1) ? undefined : value),
+        '[1,77,,undefined]'
+      );
+
+      assert.strictEqual(
+        JSONZ.stringify([1, 77, 3, undefined], (key, value) => (key > 1) ? JSONZ.DELETE : value),
+        '[1,77,,]'
+      );
+    });
+
+    it('can shrink array by manipulating holder', () => {
+      assert.strictEqual(
+        JSONZ.stringify([1, 77, 3, undefined], (key, value, holder) => {
+          if (key > 1) {
+            --holder.length;
+            return JSONZ.DELETE;
+          }
+          else {
+            return value;
+          }
+        }),
+        '[1,77]'
       );
     });
 

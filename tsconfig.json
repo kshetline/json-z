@@ -5,7 +5,15 @@
     "emitDeclarationOnly": true,
     "outDir": "types",
     "noEmit": false,
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "target": "es2020",
+    "types": [
+      "node"
+    ],
+    "lib": [
+      "es2020",
+      "dom"
+    ]
   },
   "include": ["lib/index.d.ts"],
   "exclude": ["node_modules", "dist"]

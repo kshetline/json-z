@@ -1,6 +1,10 @@
+### 4.2.2
+
+* Fixed a couple of obscure replacer/reviver bugs.
+
 ### 4.2.1
 
-* Documentation-only update.
+* Documentation-only update, clarifying replacer and reviver functions.
 
 ### 4.2.0
 
