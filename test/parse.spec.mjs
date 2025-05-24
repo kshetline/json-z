@@ -569,15 +569,15 @@ it('parse(text, reviver)', () => {
   );
 
   expect(
-    JSONZ.parse('{a:1,b:2}', (k, v) => (k === 'a') ? JSONZ.DELETE : v)).to.deep.equal(
+    JSONZ.parse('{a:1,b:2,c:undefined}', (k, v) => (k && k !== 'b') ? JSONZ.DELETE : v)).to.deep.equal(
     { b: 2 },
     'JSONZ.DELETE deletes property values'
   );
 
   expect(
-    JSONZ.parse('{a:1,b:2}', (k, v) => (k === 'a') ? undefined : v)).to.deep.equal(
-    { b: 2 },
-    '`undefined` deletes property values'
+    JSONZ.parse('{a:1,b:2,c:undefined}', (k, v) => (k && k !== 'b') ? undefined : v)).to.deep.equal(
+    { b: 2, c: undefined },
+    '`undefined` deletes property values (but not already undefined values)'
   );
 
   expect(
@@ -667,6 +667,12 @@ it('parse(text, reviver) special cases', () => {
     JSONZ.stringify(JSONZ.parse('{a:56.78m}', (k, v) => typeof v === 'number' ? 88 : v))).to.equal(
     '{a:56.78m}',
     'should not modify BigDecimal values'
+  );
+
+  expect(
+    JSONZ.stringify(JSONZ.parse('[  4,5   ,   6  ,  7]', (k, v, context) => context.source || v))).to.equal(
+    "['4','5','6','7']",
+    'no white space included in source'
   );
 
   expect(
