@@ -571,18 +571,18 @@ it('parse(text, reviver)', () => {
   expect(
     JSONZ.parse('{a:1,b:2}', (k, v) => (k === 'a') ? JSONZ.DELETE : v)).to.deep.equal(
     { b: 2 },
-    'deletes property values'
+    'JSONZ.DELETE deletes property values'
   );
 
   expect(
     JSONZ.parse('{a:1,b:2}', (k, v) => (k === 'a') ? undefined : v)).to.deep.equal(
     { b: 2 },
-    'also deletes property values'
+    '`undefined` deletes property values'
   );
 
   expect(
-    JSONZ.parse('{a:1,b:2}', (k, v) => (k === 'a') ? JSONZ.UNDEFINED : v)).to.deep.equal(
-    { a: undefined, b: 2 },
+    JSONZ.parse('{a:1,b:2,c:_BigInt(3),d:_Map([[4,5]])}', (k, v) => (k === 'a') ? JSONZ.UNDEFINED : v)).to.deep.equal(
+    { a: undefined, b: 2, c: 3n, d: new Map([[4, 5]]) },
     'replaces property values with `undefined`'
   );
 
@@ -609,6 +609,20 @@ it('parse(text, reviver)', () => {
     JSONZ.parse('[0,1,2]', (k, v) => (k === '1') ? JSONZ.DELETE : v)).to.deep.equal(
     [0, , 2], // eslint-disable-line no-sparse-arrays
     'deletes array values'
+  );
+
+  expect(
+    JSONZ.parse('[0,1,2]', (k, v, context) => {
+      if (k === '1') {
+        context.holder.splice(parseInt(k), 1);
+        return JSONZ.DELETE;
+      }
+      else {
+        return v;
+      }
+    })).to.deep.equal(
+    [0, 2],
+    'deletes array values and shrinks array'
   );
 
   expect(
