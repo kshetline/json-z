@@ -652,9 +652,15 @@ it('parse(text, reviver)', () => {
 
 it('parse(text, reviver) special cases', () => {
   expect(
-    JSONZ.stringify(JSONZ.parse('{a:12.34d}', (k, v) => typeof v === 'number' ? 88 : v))).to.equal(
-    '{a:12.34d}',
-    'should not modify Decimal values'
+    JSONZ.stringify(JSONZ.parse('[{_$_:"Date",_$_value:"2025-06-01T00:00:00.000Z"}]', (k, v) => v))).to.equal(
+    "[_Date('2025-06-01T00:00:00.000Z')]",
+    'should convert type container to Date'
+  );
+
+  expect(
+    JSONZ.stringify(JSONZ.parse('{_$_:"Date",_$_value:"2025-06-01T00:00:00.000Z"}', (k, v) => v))).to.equal(
+    "_Date('2025-06-01T00:00:00.000Z')",
+    'should convert type container at root to Date'
   );
 
   expect(
