@@ -1,3 +1,7 @@
+### 4.2.5
+
+* Fixed reviver bug that prevented revival of type containers. 
+
 ### 4.2.4
 
 * Fixed a reviver bug with quoted property names.
