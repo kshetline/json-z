@@ -1,85 +1,16 @@
-export type JsonZReviver = (key: string, value: any, holder?: any) => any;
+import {
+  addTypeHandler, ExtendedTypeMode, globalizeTypeHandlers, JsonZOptions, JsonZTypeHandler, OptionSet,
+  JsonZParseOptions, Quote, removeGlobalizedTypeHandlers, removeTypeHandler, resetOptions, resetParseOptions,
+  resetStandardTypeHandlers, restoreStandardTypeHandlers, setOptions, setParseOptions
+} from './options-manager';
+import { parse } from './parse';
+import { stringify } from './stringify';
+import { UNDEFINED, DELETE, LITERALLY_AS } from './util';
+import { hasBigDecimal, setBigDecimal, hasDecimal, setDecimal } from './bignumber-util';
 
-export type JsonZReplacer = (holder: any, key: string, value: any) => any;
-export type JsonZAllowedKeys = (string | number)[];
-
-export enum Quote {
-  DOUBLE,
-  SINGLE,
-  PREFER_DOUBLE,
-  PREFER_SINGLE
-}
-
-export enum OptionSet {
-  MAX_COMPATIBILITY = 0,
-  RELAXED = 1,
-  THE_WORKS = 2
-}
-
-export enum ExtendedTypeMode {
-  OFF,
-  AS_FUNCTIONS,
-  AS_OBJECTS
-}
-
-export interface JsonZOptions {
-  extendedPrimitives?: boolean,
-  extendedTypes?: ExtendedTypeMode,
-  primitiveBigDecimal?: boolean;
-  primitiveBigInt?: boolean;
-  primitiveDecimal?: boolean;
-  quote?: '"' | "'" | Quote;
-  quoteAllKeys?: boolean;
-  replacer?: JsonZReplacer | JsonZAllowedKeys;
-  revealHiddenArrayProperties?: boolean;
-  space?: string | number | String | Number;
-  sparseArrays?: boolean;
-  trailingComma?: boolean;
-  typePrefix?: string;
-}
-
-export interface JsonZTypeHandler {
-  name: string;
-  test: (instance: any, options?: JsonZOptions) => boolean;
-  creator: (value: any) => any;
-  serializer: (instance: any, options?: JsonZOptions) => any;
-}
-
-export interface JsonZParseOptions {
-  reviveTypedContainers?: boolean;
-  reviver?: JsonZReviver;
-}
-
-export function parse(text: string, options?: JsonZParseOptions): any;
-export function parse(text: string, reviver?: JsonZReviver, options?: JsonZParseOptions): any;
-
-export function stringify(value: any, replacer?: JsonZReplacer | JsonZAllowedKeys,
-                          space?: string | number | String | Number): string;
-export function stringify(value: any, options?: JsonZOptions | OptionSet,
-                          space?: string | number | String | Number): string;
-
-export function setOptions(options: JsonZOptions | OptionSet, extraOptions?: JsonZOptions): void;
-export function resetOptions(): void;
-
-export function setParseOptions(options: JsonZParseOptions): void;
-
-export function resetParseOptions(): void;
-
-export function addTypeHandler(handler: JsonZTypeHandler): void;
-export function removeTypeHandler(typeName: string): void;
-export function resetStandardTypeHandlers(): void;
-export function restoreStandardTypeHandlers(): void;
-export function globalizeTypeHandlers(prefix?: string): void;
-export function removeGlobalizedTypeHandlers(): void;
-
-export const DELETE: Symbol;
-export const UNDEFINED: Symbol;
-export const LITERALLY_AS: (value: string) => any;
-
-export function hasBigDecimal(): boolean;
-
-export function setBigDecimal(bigDoubleClass: any): void;
-
-export function hasDecimal(): boolean;
-
-export function setDecimal(decimalClass: any): void;
+export {
+  addTypeHandler, DELETE, ExtendedTypeMode, globalizeTypeHandlers, hasBigDecimal, hasDecimal, JsonZOptions,
+  JsonZParseOptions, JsonZTypeHandler, LITERALLY_AS, OptionSet, parse, Quote, removeGlobalizedTypeHandlers,
+  removeTypeHandler, resetOptions, resetParseOptions, resetStandardTypeHandlers, restoreStandardTypeHandlers,
+  setBigDecimal, setDecimal, setOptions, setParseOptions, stringify, UNDEFINED
+};
