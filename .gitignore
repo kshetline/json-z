@@ -43,3 +43,4 @@ dist/
 
 test/output.json
 test/test.json
+/*.tgz

@@ -1,13 +1,14 @@
 {
   "name": "json-z",
-  "version": "4.2.6",
+  "version": "4.3.0",
   "description": "JSON for everyone.",
-  "main": "lib/index.min.js",
-  "types": "lib/index.d.ts",
+  "main": "dist/index.cjs.min.js",
+  "module": "dist/index.esm.min.js",
+  "umd:main": "dist/index.umd.min.js",
+  "types": "dist/index.d.ts",
   "bin": {
     "json-z": "lib/cli.js"
   },
-  "browser": "dist/index.min.js",
   "files": [
     "lib/",
     "dist/"
@@ -16,7 +17,7 @@
     "node": ">=14"
   },
   "scripts": {
-    "build": "rollup -c && copyfiles -f lib/index.d.ts dist/",
+    "build": "rimraf dist/ && rollup -c",
     "coverage": "nyc report --reporter=text-lcov > coverage/lcov.info",
     "lint": "eslint .",
     "prepublishOnly": "npm run production",
@@ -57,10 +58,8 @@
       "test"
     ]
   },
-  "dependencies": {
-    "minimist": "1.2.6"
-  },
   "devDependencies": {
+    "@rollup/plugin-terser": "^0.4.4",
     "@types/chai": "^4.3.1",
     "@types/mocha": "^9.1.1",
     "@types/node": "^22.15.18",
@@ -83,10 +82,10 @@
     "proposal-decimal": "^20250514.3.0",
     "regenerate": "^1.4.1",
     "rimraf": "^3.0.2",
-    "rollup": "^2.71.1",
+    "rollup": "^3.29.5",
     "rollup-plugin-commonjs": "^10.1.0",
+    "rollup-plugin-dts": "^6.2.1",
     "rollup-plugin-node-resolve": "^5.2.0",
-    "rollup-plugin-terser": "^7.0.2",
     "sinon": "^20.0.0",
     "typescript": "^5.8.3",
     "unicode-10.0.0": "^0.7.5"

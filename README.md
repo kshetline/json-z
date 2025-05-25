@@ -488,11 +488,6 @@ If `<file>` is not provided, then STDIN is used.
 - `-V`, `--version`: Output the version number
 - `-h`, `--help`: Output usage information
 
-### Formal Grammar
-
-Note: For simplicity's sake, the parsing of line and block comments is omitted from the grammar below.
-
-
 ### Development
 
 ```sh

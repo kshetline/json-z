@@ -1,28 +1,15 @@
 const resolve = require('rollup-plugin-node-resolve');
 const commonjs = require('rollup-plugin-commonjs');
-// noinspection JSUnresolvedReference
-const terser = require('rollup-plugin-terser').terser;
+const terser = require('@rollup/plugin-terser');
+const dts = require('rollup-plugin-dts').dts;
 const pkg = require('./package.json');
 
 module.exports = [
-  // ES6 UMD non-minified
+  // UMD Minified
   {
     input: 'lib/index.js',
     output: {
-      file: pkg.browser.replace(/\.min\.js$/, '.js'),
-      format: 'umd',
-      name: 'JSONZ'
-    },
-    plugins: [
-      resolve(),
-      commonjs()
-    ]
-  },
-  // ES6 UMD Minified
-  {
-    input: 'lib/index.js',
-    output: {
-      file: pkg.browser,
+      file: pkg['umd:main'],
       sourcemap: true,
       format: 'umd',
       name: 'JSONZ'
@@ -33,23 +20,25 @@ module.exports = [
       terser()
     ]
   },
-  // ES6 module non-minified
+  // CJS module minified
   {
     input: 'lib/index.js',
     output: {
-      file: pkg.browser.replace(/\.min\.js$/, '.mjs'),
-      format: 'esm'
+      file: pkg.main,
+      sourcemap: true,
+      format: 'cjs'
     },
     plugins: [
       resolve(),
-      commonjs()
+      commonjs(),
+      terser()
     ]
   },
-  // ES6 module Minified
+  // ESM module minified
   {
     input: 'lib/index.js',
     output: {
-      file: pkg.browser.replace(/\.js$/, '.mjs'),
+      file: pkg.module,
       sourcemap: true,
       format: 'esm'
     },
@@ -57,6 +46,17 @@ module.exports = [
       resolve(),
       commonjs(),
       terser()
+    ]
+  },
+  // Types
+  {
+    input: 'lib/index.d.ts',
+    output: {
+      file: pkg.types,
+      format: 'esm'
+    },
+    plugins: [
+      dts()
     ]
   }
 ];

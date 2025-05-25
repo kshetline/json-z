@@ -1,13 +1,13 @@
 import { JsonZReviver } from './parse';
 
-export enum Quote {
+export const enum Quote {
   DOUBLE,
   SINGLE,
   PREFER_DOUBLE,
   PREFER_SINGLE
 }
 
-export enum ExtendedTypeMode {
+export const enum ExtendedTypeMode {
   OFF,
   AS_FUNCTIONS,
   AS_OBJECTS
@@ -17,10 +17,10 @@ export type JsonZAllowedKeys = (string | number)[];
 
 export type JsonZReplacer = (holder: any, key: string, value: any) => any;
 
-export enum OptionSet {
-  MAX_COMPATIBILITY = 0,
-  RELAXED = 1,
-  THE_WORKS = 2
+export const enum OptionSet {
+  MAX_COMPATIBILITY,
+  RELAXED,
+  THE_WORKS
 }
 
 export interface JsonZOptions {
