@@ -29,7 +29,7 @@ key-value-pair = ( string | identifier (* JSON5 *) ), inert-content, ":", value 
 
 identifier = identifier-start, { identifier-character };
 
-(* Indentiers are in accord with the ECMAScript 5.1 specification:
+(* Identifiers are in accord with the ECMAScript 5.1 specification:
     https://262.ecma-international.org/5.1/#sec-7.6
 
 Note: Identifiers can also use \uXXXX-style escapes with codepoints corresponding
@@ -82,7 +82,7 @@ identifier-character = identifier-start | decimal-digit | "\u200C" (* ZERO WIDTH
 
 (* Unicode spacing combining mark: https://www.compart.com/en/unicode/category/Mc
 Unicode non-spacing mark: https://www.compart.com/en/unicode/category/Mc
-Unicode decimal digit number: hhttps://www.compart.com/en/unicode/category/Nd
+Unicode decimal digit number: https://www.compart.com/en/unicode/category/Nd
 Unicode connector punctuation: https://www.compart.com/en/unicode/category/Pc *)
 
 @endebnf
@@ -97,7 +97,7 @@ number = [sign], unsigned-number ;
 
 unsigned-number = integer | floating | symbolic-number (* JSON5 *) ;
 
-integer = ( binary (* JSON-Z *) | octal (* JSON-Z *) | decimal | hex ), [ "n" ] (* JSON-Z *) ;
+integer = ( binary (* JSON-Z *) | octal (* JSON-Z *) | decimal | hex (* JSON5 *) ), [ "n" ] (* JSON-Z *) ;
 
 binary = "0b", binary-digit, { [ "_" ], binary-digit } ;
 
