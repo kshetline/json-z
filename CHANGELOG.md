@@ -3,6 +3,7 @@
 * JSON-Z can now be used as an ESM module. There are no functional changes, but a possible breaking change with how the package is imported:
 
 `import JSONZ from 'json-z';` instead of `import * as JSONZ from 'json-z';`
+* Updated grammar documentation.
 
 ### 4.2.1-4.2.6
 
