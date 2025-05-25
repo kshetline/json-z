@@ -118,7 +118,7 @@ JSON-Z optionally provides special handling for other data types, so that values
 
 [IEEE 754]: http://ieeexplore.ieee.org/servlet/opac?punumber=4610933
 
-## Short Example
+## “Kitchen sink” example
 
 ```
 {
@@ -129,7 +129,7 @@ JSON-Z optionally provides special handling for other data types, so that values
   lineBreaks: "Look, Mom! \
 No \\n's!",
   million: 1_000_000, // Underscore separators in numbers allowed
-  hexadecimal: 0xdecaf,
+  hexadecimal: /* block comment */ 0xdecaf,
   // Leading 0 indicates octal if no non-octal digits (8, 9) follow 
   octal: [0o7, 074],
   binary: 0b100101,
@@ -170,7 +170,7 @@ const JSONZ = require('json-z')
 Or, as TypeScript:
 
 ```typescript
-import * as JSONZ from 'json-z';
+import JSONZ from 'json-z';
 ```
 
 ### Browsers
