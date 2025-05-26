@@ -31,7 +31,9 @@
     ],
     "no-process-exit": "off",
     "no-prototype-builtins": "off",
+    "node/no-unpublished-require": "off",
     "node/no-unsupported-features/es-syntax": "off",
+    "node/shebang": "off",
     "no-unused-expressions": "off",
     "chai-friendly/no-unused-expressions": "error",
     "object-curly-spacing": [
