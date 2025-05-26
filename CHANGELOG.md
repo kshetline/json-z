@@ -1,3 +1,7 @@
+### 5.0.1
+
+* Eliminated `minimist` dependency. (Package is now dependency-free.)
+
 ### 5.0.0
 
 * JSON-Z can now be used as an ESM module. There are no functional changes, but a possible breaking change with how the package is imported:
