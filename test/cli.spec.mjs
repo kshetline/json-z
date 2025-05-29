@@ -57,14 +57,14 @@ describe('CLI', () => {
     });
   });
 
-  it('indents output with the number of spaces specified', done => {
+  function indentTest(done, flag, value, expected) {
     const proc = child.spawn(
       process.execPath,
       [
         cliPath,
         path.resolve(__dirname, 'test.jsonz'),
-        '-s',
-        '4'
+        flag,
+        value
       ]
     );
 
@@ -74,40 +74,27 @@ describe('CLI', () => {
     });
 
     proc.stdout.on('end', () => {
-      assert.strictEqual(output, '{\n    "$": 100,\n    "a": 1,\n    "b": 2\n}');
+      assert.strictEqual(output, expected);
       done();
     });
-  });
+  }
 
-  it('indents output with tabs when specified', done => {
+  it('indents output with the number of spaces specified with -s', done =>
+    indentTest(done, '-s', '4', '{\n    "$": 100,\n    "a": 1,\n    "b": 2\n}'));
+
+  it('indents output with the number of spaces specified with --space', done =>
+    indentTest(done, '--space', '4', '{\n    "$": 100,\n    "a": 1,\n    "b": 2\n}'));
+
+  it('indents output with tabs when specified', done =>
+    indentTest(done, '-s', 't', '{\n\t"$": 100,\n\t"a": 1,\n\t"b": 2\n}'));
+
+  function fileOutTest(done, flag) {
     const proc = child.spawn(
       process.execPath,
       [
         cliPath,
         path.resolve(__dirname, 'test.jsonz'),
-        '-s',
-        't'
-      ]
-    );
-
-    let output = '';
-    proc.stdout.on('data', data => {
-      output += data;
-    });
-
-    proc.stdout.on('end', () => {
-      assert.strictEqual(output, '{\n\t"$": 100,\n\t"a": 1,\n\t"b": 2\n}');
-      done();
-    });
-  });
-
-  it('outputs to the specified file', done => {
-    const proc = child.spawn(
-      process.execPath,
-      [
-        cliPath,
-        path.resolve(__dirname, 'test.jsonz'),
-        '-o',
+        flag,
         testPath = path.resolve(__dirname, 'output.json')
       ]
     );
@@ -122,15 +109,21 @@ describe('CLI', () => {
       );
       done();
     });
-  });
+  }
 
-  it('validates valid JSON-Z files', done => {
+  it('outputs to the specified file with -o', done =>
+    fileOutTest(done, '-o'));
+
+  it('outputs to the specified file with --out-file', done =>
+    fileOutTest(done, '--out-file'));
+
+  function validateTest(done, flag) {
     const proc = child.spawn(
       process.execPath,
       [
         cliPath,
         path.resolve(__dirname, 'test.jsonz'),
-        '-v'
+        flag
       ]
     );
 
@@ -138,7 +131,13 @@ describe('CLI', () => {
       assert.strictEqual(code, 0);
       done();
     });
-  });
+  }
+
+  it('validates valid JSON-Z files with -v', done =>
+    validateTest(done, '-v'));
+
+  it('validates valid JSON-Z files with --validate', done =>
+    validateTest(done, '--validate'));
 
   it('validates invalid JSON-Z files', done => {
     const proc = child.spawn(
@@ -169,8 +168,8 @@ describe('CLI', () => {
     });
   });
 
-  it('outputs the version number when specified', done => {
-    const proc = child.spawn(process.execPath, [cliPath, '-V']);
+  function versionTest(done, flag) {
+    const proc = child.spawn(process.execPath, [cliPath, flag]);
 
     let output = '';
     proc.stdout.on('data', data => {
@@ -181,10 +180,16 @@ describe('CLI', () => {
       assert.strictEqual(output, pkg.version + '\n');
       done();
     });
-  });
+  }
 
-  it('outputs usage information when specified', done => {
-    const proc = child.spawn(process.execPath, [cliPath, '-h']);
+  it('outputs the version number when specified with -V', done =>
+    versionTest(done, '-V'));
+
+  it('outputs the version number when specified with --version', done =>
+    versionTest(done, '--version'));
+
+  function helpTest(done, flag) {
+    const proc = child.spawn(process.execPath, [cliPath, flag]);
 
     let output = '';
     proc.stdout.on('data', data => {
@@ -195,14 +200,20 @@ describe('CLI', () => {
       assert(/Usage/.test(output));
       done();
     });
-  });
+  }
 
-  it('is backward compatible with v0.5.1', done => {
+  it('outputs usage information when specified with -h', done =>
+    helpTest(done, '-h'));
+
+  it('outputs usage information when specified with --help', done =>
+    helpTest(done, '--help'));
+
+  function backwardTest(done, flag) {
     const proc = child.spawn(
       process.execPath,
       [
         cliPath,
-        '-c',
+        flag,
         path.resolve(__dirname, 'test.jsonz')
       ]
     );
@@ -217,5 +228,11 @@ describe('CLI', () => {
       );
       done();
     });
-  });
+  }
+
+  it('is backward compatible with v0.5.1 with -c', done =>
+    backwardTest(done, '-c'));
+
+  it('is backward compatible with v0.5.1 with --convert', done =>
+    backwardTest(done, '--convert'));
 });
