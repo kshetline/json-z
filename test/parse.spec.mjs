@@ -96,6 +96,20 @@ describe('JSONZ', () => {
     );
 
     expect(
+      // eslint-disable-next-line no-proto
+      JSONZ.parse('{"__proto__":1}').__proto__).to.equal(
+      1,
+      'preserves __proto__ property names'
+    );
+
+    expect(
+      // eslint-disable-next-line no-proto
+      JSONZ.parse('{"__proto__":1}', (k, v) => v).__proto__).to.equal(
+      1,
+      'preserves __proto__ property names when reviver is used'
+    );
+
+    expect(
       JSONZ.parse('{abc:1,def:2}')).to.deep.equal(
       { abc: 1, def: 2 },
       'parses multiple properties'
@@ -246,6 +260,31 @@ describe('JSONZ', () => {
     // parses signed NaN
     expect(
       isNaN(JSONZ.parse('-NaN'))).to.be.ok;
+
+    expect(
+      JSONZ.parse('1')).to.equal(
+      1,
+      'parses 1'
+    );
+
+    expect(
+      JSONZ.parse('+1.23e100')).to.equal(
+      1.23e100,
+      'parses +1.23e100'
+    );
+
+    expect(
+      JSONZ.parse('0x1')).to.equal(
+      0x1,
+      'parses bare hexadecimal number'
+    );
+
+    expect(
+      JSONZ.parse('-0x0123456789abcdefABCDEF')).to.equal(
+      // eslint-disable-next-line no-loss-of-precision
+      -0x0123456789abcdefABCDEF,
+      'parses bare hexadecimal number'
+    );
   });
 
   function compareBigIntArrays(a, b) {
@@ -595,13 +634,20 @@ it('parse(text, reviver)', () => {
   expect(
     JSONZ.parse('[0,1,2]', (k, v) => (k === '1') ? JSONZ.UNDEFINED : v)).to.deep.equal(
     [0, undefined, 2],
-    'modifies array values'
+    'replaces array values with `undefined` using `JSONZ.UNDEFINED`'
   );
 
   expect(
     JSONZ.parse('[0,[1,2,3]]', (k, v) => (k === '2') ? 'revived' : v)).to.deep.equal(
     [0, [1, 2, 'revived']],
     'modifies nested array values'
+  );
+
+  // noinspection JSConsecutiveCommasInArrayLiteral
+  expect(
+    JSONZ.parse('[0,1,2]', (k, v) => (k === '1') ? undefined : v)).to.deep.equal(
+    [0, , 2], // eslint-disable-line no-sparse-arrays
+    'deletes array values using `JSONZ.DELETE`'
   );
 
   // noinspection JSConsecutiveCommasInArrayLiteral
@@ -647,6 +693,20 @@ it('parse(text, reviver)', () => {
     JSONZ.parse('{a:{b:"true"}}', function (k, v) { return (k === 'b') ? JSONZ.parse(v) : v; })).to.deep.equal(
     { a: { b: true } },
     'make sure parse is reëntrant'
+  );
+
+  expect(
+    JSONZ.parse('{a:1234567890123456789001234567890,b:"x"}', function (k, v, context, noContext) {
+      if (typeof v === 'number' && !noContext) {
+        return BigInt(context.source);
+      }
+      else if (typeof v === 'string' && !noContext) {
+        return context.source.replace(/"/g, '@');
+      }
+      return v;
+    })).to.deep.equal(
+    { a: 1234567890123456789001234567890n, b: '@x@' },
+    'make sure content of primitive values is accessible'
   );
 });
 

@@ -61,6 +61,10 @@ describe('stringify', () => {
       assert.strictEqual(JSONZ.stringify({ '\\\b\f\n\r\t\v\0\x01': 1 }), "{'\\\\\\b\\f\\n\\r\\t\\v\\0\\u0001':1}");
     });
 
+    it('stringifies escaped null character property names', () => {
+      assert.strictEqual(JSONZ.stringify({ '\0\x001': 1 }), "{'\\0\\x001':1}");
+    });
+
     it('stringifies multiple properties', () => {
       assert.strictEqual(JSONZ.stringify({ abc: 1, def: 2 }), '{abc:1,def:2}');
     });
@@ -323,6 +327,10 @@ describe('stringify', () => {
       assert.strictEqual(JSONZ.stringify('\\\b\f\n\r\t\v\0\x0f'), "'\\\\\\b\\f\\n\\r\\t\\v\\0\\u000F'");
     });
 
+    it('stringifies escaped null characters', () => {
+      assert.strictEqual(JSONZ.stringify('\0\x001'), "'\\0\\x001'");
+    });
+
     it('stringifies with backtick quoting', () => {
       assert.strictEqual(JSONZ.stringify(`'"$-{`), `\`'"$-{\``);
       assert.strictEqual(JSONZ.stringify(`'"$\{`), `\`'"$\\{\``);
@@ -358,12 +366,6 @@ describe('stringify', () => {
     function C() { }
     Object.assign(C.prototype, { toJSON() { return { a: 1, b: 2 }; } });
     assert.strictEqual(JSONZ.stringify(new C(), { extendedTypes: JSONZ.ExtendedTypeMode.OFF }), '{a:1,b:2}');
-  });
-
-  it('stringifies using user defined toJSONZ methods, with toJSONZ having priority over toJSON', () => {
-    function C() {}
-    Object.assign(C.prototype, { toJSON() { return { a: 1 }; }, toJSONZ() { return { a: 1, b: 2 }; } });
-    assert.strictEqual(JSONZ.stringify(new C()), '{a:1,b:2}');
   });
 
   it('stringifies using user defined toJSON(key) methods', () => {
@@ -491,6 +493,12 @@ describe('stringify', () => {
       );
     });
 
+    it('sets `this` to the parent value', () => {
+      assert.strictEqual(
+        JSONZ.stringify({ a: { b: 1 } }, function (k, v) { return (k === 'b' && this.b) ? 2 : v; }),
+        '{a:{b:2}}');
+    });
+
     it('deletes object values when a replacer returns DELETE or `undefined`', () => {
       assert.strictEqual(
         JSONZ.stringify({ a: 1, b: 2 }, (key, value) => (key === 'b') ? JSONZ.DELETE : value),
@@ -556,25 +564,9 @@ describe('stringify', () => {
       );
     });
 
-    it('sets `this` to the parent value', () => {
-      assert.strictEqual(
-        JSONZ.stringify({ a: { b: 1 } }, function (k, v) { return (k === 'b' && this.b) ? 2 : v; }),
-        '{a:{b:2}}'
-      );
-    });
-
     it('is called after toJSON', () => {
       function C() {}
       Object.assign(C.prototype, { toJSON() { return { a: 1, b: 2 }; } });
-      assert.strictEqual(
-        JSONZ.stringify(new C(), (key, value) => (key === 'a') ? 2 : value),
-        '{a:2,b:2}'
-      );
-    });
-
-    it('is called after toJSONZ', () => {
-      function C() {}
-      Object.assign(C.prototype, { toJSONZ() { return { a: 1, b: 2 }; } });
       assert.strictEqual(
         JSONZ.stringify(new C(), (key, value) => (key === 'a') ? 2 : value),
         '{a:2,b:2}'

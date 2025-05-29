@@ -18,6 +18,7 @@ export declare function isOctalDigit(c?: string): boolean
 export declare function isSpaceSeparator(c?: string): boolean
 export declare function isTypeContainer(obj: unknown): boolean
 export declare function LITERALLY_AS(text?: string): LITERALLY_AS_CLASS
+export declare function setObjectProperty(obj: any, key: string | number | symbol, value: any): void
 export declare function unwrap(obj: any): any
 
 export const DELETE: Symbol;
