@@ -1,3 +1,7 @@
+### 5.1.0
+
+* Update allowed CLI arguments to match JSON5 CLI.
+
 ### 5.0.1
 
 * Eliminated `minimist` dependency. (Package is now dependency-free.)
