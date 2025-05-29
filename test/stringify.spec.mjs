@@ -374,6 +374,18 @@ describe('stringify', () => {
     assert.strictEqual(JSONZ.stringify({ a: new C(), b: new C() }), '{a:1,b:2}');
   });
 
+  it('stringifies using user defined toJSON5 methods', () => {
+    function C() { }
+    Object.assign(C.prototype, { toJSON() { return { a: 1, b: 2 }; } });
+    assert.strictEqual(JSONZ.stringify(new C(), { extendedTypes: JSONZ.ExtendedTypeMode.OFF }), '{a:1,b:2}');
+  });
+
+  it('stringifies using user defined toJSON5(key) methods', () => {
+    function C() {}
+    Object.assign(C.prototype, { toJSON5(key) { return (key === 'a') ? 1 : 2; } });
+    assert.strictEqual(JSONZ.stringify({ a: new C(), b: new C() }), '{a:1,b:2}');
+  });
+
   it('stringifies using toJSONZ methods', () => {
     function C() {}
     Object.assign(C.prototype, { toJSONZ() { return { a: 1, b: 2 }; } });
@@ -391,6 +403,34 @@ describe('stringify', () => {
     Object.assign(C.prototype, {
       toJSON() { return { a: 1, b: 2 }; },
       toJSONZ() { return { a: 2, b: 2 }; }
+    });
+    assert.strictEqual(JSONZ.stringify(new C()), '{a:2,b:2}');
+  });
+
+  it('calls toJSONZ instead of toJSON5 if both are defined', () => {
+    function C() {}
+    Object.assign(C.prototype, {
+      toJSON5() { return { a: 1, b: 2 }; },
+      toJSONZ() { return { a: 2, b: 2 }; }
+    });
+    assert.strictEqual(JSONZ.stringify(new C()), '{a:2,b:2}');
+  });
+
+  it('calls toJSONZ instead of toJSON or toJSON5 if all are defined', () => {
+    function C() {}
+    Object.assign(C.prototype, {
+      toJSON() { return { a: 1, b: 2 }; },
+      toJSON5() { return { a: 1, b: 2 }; },
+      toJSONZ() { return { a: 2, b: 3 }; }
+    });
+    assert.strictEqual(JSONZ.stringify(new C()), '{a:2,b:3}');
+  });
+
+  it('calls toJSON5 instead of toJSON if both are defined', () => {
+    function C() {}
+    Object.assign(C.prototype, {
+      toJSON() { return { a: 1, b: 2 }; },
+      toJSON5() { return { a: 2, b: 2 }; }
     });
     assert.strictEqual(JSONZ.stringify(new C()), '{a:2,b:2}');
   });
