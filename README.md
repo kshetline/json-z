@@ -40,7 +40,7 @@ This JavaScript library is the official reference implementation for JSON-Z pars
 
 ## Summary of Features
 
-The following features, which are not supported in standard JSON, have been added to JSON-Z. Items in **bold** are unique to JSON-Z.
+The following features, which are not supported in standard JSON, have been added to JSON-Z, with many inherited from JSON5. Items in **bold** are unique to JSON-Z.
 
 ### Objects
 

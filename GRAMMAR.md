@@ -113,7 +113,7 @@ decimal-sequence = decimal-digit, { [ "_" ], decimal-digit } ;
 
 non-octal-sequence = non-octal-digit, { [ "_" ], non-octal-digit } ;
 
-hex = "0x", hex-digit, { [ "_" ], hex-digit } ;
+hex (* JSON5 *) = "0x", hex-digit, { [ "_" ], hex-digit } ;
 
 floating = ( ( ( decimal-sequence, ".", [ decimal-sequence ] | ".", decimal-sequence ), [ exponent ] ) | decimal-sequence, exponent ), [ "d" (* JSON-Z *) | "n" (* JSON-Z / integer only *) | "m" (* JSON-Z *) ] ;
 
@@ -141,7 +141,7 @@ octal (* JSON-Z *) = "0o", { octal-digit }- ;
 
 decimal = { decimal-digit }- ;
 
-hex = "0x", { hex-digit }- ;
+hex (* JSON5 *) = "0x", { hex-digit }- ;
 
 floating = { decimal-digit }-, ( ( ".", { decimal-digit }-, [ exponent ]) | ( exponent ) ), [ "d" (* JSON-Z *) | "n" (* JSON-Z / integer only *) | "m" (* JSON-Z *) ] ;
 
@@ -155,13 +155,13 @@ exponent = ("E" | 'e'), [ sign ], { decimal-digit }- ;
 ```plantuml
 @startebnf
 
-string = double-quoted-string | single-quoted-string | backtick-quoted-string (* JSON-Z *) ;
+string = double-quoted-string | single-quoted-string (* JSON5 *) | backtick-quoted-string (* JSON-Z *) ;
 
 double-quoted-string = '"', { safe-string-character | "'" | "`" | escape }, '"';
 
-single-quoted-string = "'", { safe-string-character | '"' | "`" | escape }, "'";
+single-quoted-string (* JSON5 *) = "'", { safe-string-character | '"' | "`" | escape }, "'";
 
-backtick-quoted-string = "`", { safe-string-character (* Note: the sequence ${ must be escaped as $\{ *) | "'" | '"' | escape }, "`";
+backtick-quoted-string (* JSON-Z *) = "`", { safe-string-character (* Note: the sequence ${ must be escaped as $\{ *) | "'" | '"' | escape }, "`";
 
 escape = "\", ( simple-escape | short-escape (* JSON5 *) | unicode-escape ) ;
 
