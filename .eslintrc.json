@@ -10,6 +10,7 @@
     "sourceType": "module",
     "ecmaVersion": 2023
   },
+  "ignorePatterns": ["*.d.ts"],
   "rules": {
     "array-bracket-spacing": [
       "error",
@@ -31,6 +32,7 @@
     ],
     "no-process-exit": "off",
     "no-prototype-builtins": "off",
+    "n/no-process-exit": "off",
     "n/no-unpublished-require": "off",
     "n/no-unsupported-features/es-syntax": "off",
     "n/shebang": "off",
