@@ -68,9 +68,10 @@ describe('JSONZ', () => {
       'parses backtick-quoted string property names'
     );
 
+    // noinspection NonAsciiCharacters
     expect(
-      JSONZ.parse('{a:1}')).to.deep.equal(
-      { a: 1 },
+      JSONZ.parse('{a४:1}')).to.deep.equal(
+      { a४: 1 },
       'parses unquoted property names'
     );
 
