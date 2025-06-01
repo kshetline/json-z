@@ -21,6 +21,10 @@
       "as-needed"
     ],
     "brace-style": ["error", "stroustrup", { "allowSingleLine": true }],
+    "camelcase": [
+      "error",
+      { "allow": ["^LOWER_[a-z]", "^_\\$"] }
+    ],
     "comma-dangle": [
       "error",
       "never"
@@ -53,6 +57,11 @@
         "named": "never",
         "asyncArrow": "always"
       }
+    ],
+    "yoda": [
+      "error",
+      "never",
+      { "exceptRange": true }
     ]
   },
   "overrides": [

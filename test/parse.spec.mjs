@@ -188,8 +188,8 @@ describe('JSONZ', () => {
 
   it('numbers', () => {
     expect(
-      JSONZ.parse('[0,0.,0e0]')).to.deep.equal(
-      [0, 0, 0],
+      JSONZ.parse('[0,0.,0e0,0E0]')).to.deep.equal(
+      [0, 0, 0, 0],
       'parses leading zeroes'
     );
 
@@ -224,13 +224,13 @@ describe('JSONZ', () => {
     );
 
     expect(
-      JSONZ.parse('[1e0,1e1,1e01,1.e0,1.1e0,1e-1,1e+1]')).to.deep.equal(
-      [1, 10, 10, 1, 1.1, 0.1, 10],
+      JSONZ.parse('[1e0,1e1,1e01,1.e0,1.E0,1.1E0,1e-1,1E+1]')).to.deep.equal(
+      [1, 10, 10, 1, 1, 1.1, 0.1, 10],
       'parses exponents'
     );
 
     expect(
-      JSONZ.parse('[0x1,0x10,0xff,0xFF,0x1_1]')).to.deep.equal(
+      JSONZ.parse('[0x1,0x10,0Xff,0xFF,0x1_1]')).to.deep.equal(
       [1, 16, 255, 255, 17],
       'parses hexadecimal numbers'
     );
@@ -518,8 +518,8 @@ describe('JSONZ', () => {
 
   it('strings', () => {
     expect(
-      JSONZ.parse('"abc"')).to.equal(
-      'abc',
+      JSONZ.parse('"ab😀c"')).to.equal(
+      'ab😀c',
       'parses double-quoted strings'
     );
 

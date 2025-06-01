@@ -54,7 +54,7 @@ describe('stringify', () => {
 
     it('stringifies unicode property names', () => {
       // noinspection NonAsciiCharacters
-      assert.strictEqual(JSONZ.stringify({ 'ùńîċõďë': 9 }), '{ùńîċõďë:9}'); // eslint-disable-line quote-props
+      assert.strictEqual(JSONZ.stringify({ 'ùńîċõďë': 9, 𠀋: 0 }), '{ùńîċõďë:9,𠀋:0}'); // eslint-disable-line quote-props
     });
 
     it('stringifies escaped property names', () => {
@@ -320,7 +320,7 @@ describe('stringify', () => {
     });
 
     it('stringifies double quoted strings', () => {
-      assert.strictEqual(JSONZ.stringify("abc'"), `"abc'"`);
+      assert.strictEqual(JSONZ.stringify("ab😀c'"), `"ab😀c'"`);
     });
 
     it('stringifies escaped characters', () => {
