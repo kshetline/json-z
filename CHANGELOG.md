@@ -2,8 +2,7 @@
 
 * Approximately 3–4 times faster parsing than 5.0.x versions.
 * JSON-Z will now honor an object’s `toJSON5()` method, if present, at higher priority than `toJSON()`, and lower priority than `toJSONZ()`.
-* Update allowed CLI arguments to match JSON5 CLI.
-* Faster parsing.
+* Updated the allowed CLI arguments to match the latest JSON5 CLI.
 
 ### 5.0.1
 
