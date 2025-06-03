@@ -781,7 +781,7 @@ describe('stringify', () => {
       assert.strictEqual(JSONZ.parse(`'${s}'`), s);
     });
 
-    it('parse long string (20MB)', () => {
+    it('parse long escaped string (20KB)', () => {
       const s = '\\t'.repeat(10000);
       assert.strictEqual(JSONZ.parse(`'${s}'`), s.replace(/\\t/g, '\t'));
     });
