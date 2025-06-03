@@ -1,6 +1,6 @@
 {
   "name": "json-z",
-  "version": "5.0.1",
+  "version": "5.1.0",
   "description": "JSON for everyone.",
   "main": "dist/index.cjs.min.js",
   "module": "dist/index.esm.min.js",
@@ -8,7 +8,7 @@
   "browser": "dist/index.min.js",
   "types": "dist/index.d.ts",
   "bin": {
-    "json-z": "dist/cli.js"
+    "json-z": "lib/cli.js"
   },
   "files": [
     "lib/",
@@ -26,6 +26,7 @@
     "production": "npm run lint && npm test && npm run build",
     "test": "nyc --reporter=text --reporter=html mocha test/**/*.spec.mjs",
     "quick-test": "mocha test/errors.spec.mjs",
+    "speed-test": "node test/speed-test.mjs",
     "version": "npm run build-package && git add package.json5"
   },
   "repository": {
@@ -60,26 +61,25 @@
     ]
   },
   "devDependencies": {
-    "@rollup/plugin-json": "^6.1.0",
     "@rollup/plugin-terser": "^0.4.4",
     "@types/chai": "^4.3.1",
     "@types/mocha": "^9.1.1",
     "@types/node": "^22.15.18",
-    "@typescript-eslint/eslint-plugin": "^8.32.1",
-    "@typescript-eslint/parser": "^8.32.1",
+    "@typescript-eslint/eslint-plugin": "^6.21.0",
+    "@typescript-eslint/parser": "^6.21.0",
+    "benchmark": "^2.1.4",
+    "by-request": "^1.3.4",
     "chai": "^4.3.6",
     "copyfiles": "^2.3.0",
     "core-js": "^2.6.11",
-    "coveralls": "^3.1.1",
     "decimal.js": "^10.5.0",
     "decimal.js-light": "^2.5.0",
-    "eslint": "^8.57.1",
-    "eslint-config-standard": "^17.1.0",
+    "eslint": "^7.32.0",
+    "eslint-config-standard": "^16.0.3",
     "eslint-plugin-chai-friendly": "^1.0.1",
     "eslint-plugin-import": "^2.31.0",
-    "eslint-plugin-node": "^11.1.0",
-    "eslint-plugin-promise": "^6.6.0",
-    "minimist": "^1.2.8",
+    "eslint-plugin-n": "^16.6.2",
+    "eslint-plugin-promise": "^5.2.0",
     "mocha": "^10.2.0",
     "nyc": "^15.1.0",
     "proposal-decimal": "^20250514.3.0",
@@ -89,9 +89,11 @@
     "rollup-plugin-commonjs": "^10.1.0",
     "rollup-plugin-dts": "^6.2.1",
     "rollup-plugin-node-resolve": "^5.2.0",
-    "rollup-plugin-preserve-shebang": "^1.0.1",
     "sinon": "^20.0.0",
     "typescript": "^5.8.3",
     "unicode-10.0.0": "^0.7.5"
+  },
+  "overrides": {
+    "eslint": "$eslint"
   }
 }

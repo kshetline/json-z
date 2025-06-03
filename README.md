@@ -40,7 +40,7 @@ This JavaScript library is the official reference implementation for JSON-Z pars
 
 ## Summary of Features
 
-The following features, which are not supported in standard JSON, have been added to JSON-Z. Items in **bold** are unique to JSON-Z.
+The following features, which are not supported in standard JSON, have been added to JSON-Z, with many inherited from JSON5. Items in **bold** are unique to JSON-Z.
 
 ### Objects
 
@@ -270,17 +270,18 @@ This works very much like [`JSON.stringify`](https://developer.mozilla.org/en-US
 
 A JSON-Z string representing the value.
 
-#### Using obj.toJSON() and obj.toJSONZ()
+#### Using obj.toJSON(), obj.toJSON5(), and obj.toJSONZ()
 
 For use with the standard `JSON.stringify()`, any object being stringified can have an optional `toJSON()` method. This way an object can explicitly tell `JSON.stringify()` how its value should be represented.
 
 JSON-Z can also use an object's `toJSON()` method, but other factors might take priority as follows:
 
 1. If an object has a `toJSONZ()` method, this takes the highest priority. The value returned by `toJSONZ()` can be further modified by any replacer function in effect. Note that when `toJSONZ()` is called, two arguments are passed to this function: `key` (an array index or object property name) and `holder` (the parent array or parent object (if any) of the object).
-2. If an object can be converted by an extended type handler, that has the next priority. When `ExtendedTypeMode.AS_FUNCTIONS` is in effect, a conversion handled by an extended type handler is final. Replacer functions can, however, further act upon extended type conversions when `ExtendedTypeMode.AS_OBJECTS` is in effect.
-3. `toJSON()` is the next possible value conversion, but only if `toJSONZ()` has not already taken priority.
-4. Any active replacer function is then applied.
-5. Finally, special handling for `BigInt` and "big decimal" numbers takes place.
+2. An object’s `toJSON5()` method has the next priority if no `toJSONZ()` method exists.
+3. If an object can be converted by an extended type handler, that has the next priority. When `ExtendedTypeMode.AS_FUNCTIONS` is in effect, a conversion handled by an extended type handler is final. Replacer functions can, however, further act upon extended type conversions when `ExtendedTypeMode.AS_OBJECTS` is in effect.
+4. `toJSON()` is the next possible value conversion if none of the three above conditions apply.
+5. Any active replacer function is then applied.
+6. Finally, special handling for `BigInt` and "big decimal" numbers takes place.
 
 ### JSONZ.hasBigDecimal()
 

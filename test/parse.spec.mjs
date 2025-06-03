@@ -68,9 +68,10 @@ describe('JSONZ', () => {
       'parses backtick-quoted string property names'
     );
 
+    // noinspection NonAsciiCharacters
     expect(
-      JSONZ.parse('{a:1}')).to.deep.equal(
-      { a: 1 },
+      JSONZ.parse('{a४:1}')).to.deep.equal(
+      { a४: 1 },
       'parses unquoted property names'
     );
 
@@ -93,6 +94,20 @@ describe('JSONZ', () => {
       JSONZ.parse('{\\u0061\\u0062:1,\\u0024\\u005F:2,\\u005F\\u0024:3}')).to.deep.equal(
       { ab: 1, $_: 2, _$: 3 },
       'parses escaped property names'
+    );
+
+    expect(
+      // eslint-disable-next-line no-proto
+      JSONZ.parse('{"__proto__":1}').__proto__).to.equal(
+      1,
+      'preserves __proto__ property names'
+    );
+
+    expect(
+      // eslint-disable-next-line no-proto
+      JSONZ.parse('{"__proto__":1}', (k, v) => v).__proto__).to.equal(
+      1,
+      'preserves __proto__ property names when reviver is used'
     );
 
     expect(
@@ -174,8 +189,8 @@ describe('JSONZ', () => {
 
   it('numbers', () => {
     expect(
-      JSONZ.parse('[0,0.,0e0]')).to.deep.equal(
-      [0, 0, 0],
+      JSONZ.parse('[0,0.,0e0,0E0]')).to.deep.equal(
+      [0, 0, 0, 0],
       'parses leading zeroes'
     );
 
@@ -210,13 +225,13 @@ describe('JSONZ', () => {
     );
 
     expect(
-      JSONZ.parse('[1e0,1e1,1e01,1.e0,1.1e0,1e-1,1e+1]')).to.deep.equal(
-      [1, 10, 10, 1, 1.1, 0.1, 10],
+      JSONZ.parse('[1e0,1e1,1e01,1.e0,1.E0,1.1E0,1e-1,1E+1]')).to.deep.equal(
+      [1, 10, 10, 1, 1, 1.1, 0.1, 10],
       'parses exponents'
     );
 
     expect(
-      JSONZ.parse('[0x1,0x10,0xff,0xFF,0x1_1]')).to.deep.equal(
+      JSONZ.parse('[0x1,0x10,0Xff,0xFF,0x1_1]')).to.deep.equal(
       [1, 16, 255, 255, 17],
       'parses hexadecimal numbers'
     );
@@ -246,6 +261,31 @@ describe('JSONZ', () => {
     // parses signed NaN
     expect(
       isNaN(JSONZ.parse('-NaN'))).to.be.ok;
+
+    expect(
+      JSONZ.parse('1')).to.equal(
+      1,
+      'parses 1'
+    );
+
+    expect(
+      JSONZ.parse('+1.23e100')).to.equal(
+      1.23e100,
+      'parses +1.23e100'
+    );
+
+    expect(
+      JSONZ.parse('0x1')).to.equal(
+      0x1,
+      'parses bare hexadecimal number'
+    );
+
+    expect(
+      JSONZ.parse('-0x0123456789abcdefABCDEF')).to.equal(
+      // eslint-disable-next-line no-loss-of-precision
+      -0x0123456789abcdefABCDEF,
+      'parses bare hexadecimal number'
+    );
   });
 
   function compareBigIntArrays(a, b) {
@@ -479,8 +519,8 @@ describe('JSONZ', () => {
 
   it('strings', () => {
     expect(
-      JSONZ.parse('"abc"')).to.equal(
-      'abc',
+      JSONZ.parse('"ab😀c"')).to.equal(
+      'ab😀c',
       'parses double-quoted strings'
     );
 
@@ -595,13 +635,20 @@ it('parse(text, reviver)', () => {
   expect(
     JSONZ.parse('[0,1,2]', (k, v) => (k === '1') ? JSONZ.UNDEFINED : v)).to.deep.equal(
     [0, undefined, 2],
-    'modifies array values'
+    'replaces array values with `undefined` using `JSONZ.UNDEFINED`'
   );
 
   expect(
     JSONZ.parse('[0,[1,2,3]]', (k, v) => (k === '2') ? 'revived' : v)).to.deep.equal(
     [0, [1, 2, 'revived']],
     'modifies nested array values'
+  );
+
+  // noinspection JSConsecutiveCommasInArrayLiteral
+  expect(
+    JSONZ.parse('[0,1,2]', (k, v) => (k === '1') ? undefined : v)).to.deep.equal(
+    [0, , 2], // eslint-disable-line no-sparse-arrays
+    'deletes array values using `JSONZ.DELETE`'
   );
 
   // noinspection JSConsecutiveCommasInArrayLiteral
@@ -647,6 +694,20 @@ it('parse(text, reviver)', () => {
     JSONZ.parse('{a:{b:"true"}}', function (k, v) { return (k === 'b') ? JSONZ.parse(v) : v; })).to.deep.equal(
     { a: { b: true } },
     'make sure parse is reëntrant'
+  );
+
+  expect(
+    JSONZ.parse('{a:1234567890123456789001234567890,b:"x"}', function (k, v, context, noContext) {
+      if (typeof v === 'number' && !noContext) {
+        return BigInt(context.source);
+      }
+      else if (typeof v === 'string' && !noContext) {
+        return context.source.replace(/"/g, '@');
+      }
+      return v;
+    })).to.deep.equal(
+    { a: 1234567890123456789001234567890n, b: '@x@' },
+    'make sure content of primitive values is accessible'
   );
 });
 

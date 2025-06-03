@@ -54,11 +54,15 @@ describe('stringify', () => {
 
     it('stringifies unicode property names', () => {
       // noinspection NonAsciiCharacters
-      assert.strictEqual(JSONZ.stringify({ 'ùńîċõďë': 9 }), '{ùńîċõďë:9}'); // eslint-disable-line quote-props
+      assert.strictEqual(JSONZ.stringify({ 'ùńîċõďë': 9, 𠀋: 0 }), '{ùńîċõďë:9,𠀋:0}'); // eslint-disable-line quote-props
     });
 
     it('stringifies escaped property names', () => {
       assert.strictEqual(JSONZ.stringify({ '\\\b\f\n\r\t\v\0\x01': 1 }), "{'\\\\\\b\\f\\n\\r\\t\\v\\0\\u0001':1}");
+    });
+
+    it('stringifies escaped null character property names', () => {
+      assert.strictEqual(JSONZ.stringify({ '\0\x001': 1 }), "{'\\0\\x001':1}");
     });
 
     it('stringifies multiple properties', () => {
@@ -316,11 +320,15 @@ describe('stringify', () => {
     });
 
     it('stringifies double quoted strings', () => {
-      assert.strictEqual(JSONZ.stringify("abc'"), `"abc'"`);
+      assert.strictEqual(JSONZ.stringify("ab😀c'"), `"ab😀c'"`);
     });
 
     it('stringifies escaped characters', () => {
       assert.strictEqual(JSONZ.stringify('\\\b\f\n\r\t\v\0\x0f'), "'\\\\\\b\\f\\n\\r\\t\\v\\0\\u000F'");
+    });
+
+    it('stringifies escaped null characters', () => {
+      assert.strictEqual(JSONZ.stringify('\0\x001'), "'\\0\\x001'");
     });
 
     it('stringifies with backtick quoting', () => {
@@ -360,15 +368,21 @@ describe('stringify', () => {
     assert.strictEqual(JSONZ.stringify(new C(), { extendedTypes: JSONZ.ExtendedTypeMode.OFF }), '{a:1,b:2}');
   });
 
-  it('stringifies using user defined toJSONZ methods, with toJSONZ having priority over toJSON', () => {
-    function C() {}
-    Object.assign(C.prototype, { toJSON() { return { a: 1 }; }, toJSONZ() { return { a: 1, b: 2 }; } });
-    assert.strictEqual(JSONZ.stringify(new C()), '{a:1,b:2}');
-  });
-
   it('stringifies using user defined toJSON(key) methods', () => {
     function C() {}
     Object.assign(C.prototype, { toJSON(key) { return (key === 'a') ? 1 : 2; } });
+    assert.strictEqual(JSONZ.stringify({ a: new C(), b: new C() }), '{a:1,b:2}');
+  });
+
+  it('stringifies using user defined toJSON5 methods', () => {
+    function C() { }
+    Object.assign(C.prototype, { toJSON() { return { a: 1, b: 2 }; } });
+    assert.strictEqual(JSONZ.stringify(new C(), { extendedTypes: JSONZ.ExtendedTypeMode.OFF }), '{a:1,b:2}');
+  });
+
+  it('stringifies using user defined toJSON5(key) methods', () => {
+    function C() {}
+    Object.assign(C.prototype, { toJSON5(key) { return (key === 'a') ? 1 : 2; } });
     assert.strictEqual(JSONZ.stringify({ a: new C(), b: new C() }), '{a:1,b:2}');
   });
 
@@ -389,6 +403,34 @@ describe('stringify', () => {
     Object.assign(C.prototype, {
       toJSON() { return { a: 1, b: 2 }; },
       toJSONZ() { return { a: 2, b: 2 }; }
+    });
+    assert.strictEqual(JSONZ.stringify(new C()), '{a:2,b:2}');
+  });
+
+  it('calls toJSONZ instead of toJSON5 if both are defined', () => {
+    function C() {}
+    Object.assign(C.prototype, {
+      toJSON5() { return { a: 1, b: 2 }; },
+      toJSONZ() { return { a: 2, b: 2 }; }
+    });
+    assert.strictEqual(JSONZ.stringify(new C()), '{a:2,b:2}');
+  });
+
+  it('calls toJSONZ instead of toJSON or toJSON5 if all are defined', () => {
+    function C() {}
+    Object.assign(C.prototype, {
+      toJSON() { return { a: 1, b: 2 }; },
+      toJSON5() { return { a: 1, b: 2 }; },
+      toJSONZ() { return { a: 2, b: 3 }; }
+    });
+    assert.strictEqual(JSONZ.stringify(new C()), '{a:2,b:3}');
+  });
+
+  it('calls toJSON5 instead of toJSON if both are defined', () => {
+    function C() {}
+    Object.assign(C.prototype, {
+      toJSON() { return { a: 1, b: 2 }; },
+      toJSON5() { return { a: 2, b: 2 }; }
     });
     assert.strictEqual(JSONZ.stringify(new C()), '{a:2,b:2}');
   });
@@ -491,6 +533,12 @@ describe('stringify', () => {
       );
     });
 
+    it('sets `this` to the parent value', () => {
+      assert.strictEqual(
+        JSONZ.stringify({ a: { b: 1 } }, function (k, v) { return (k === 'b' && this.b) ? 2 : v; }),
+        '{a:{b:2}}');
+    });
+
     it('deletes object values when a replacer returns DELETE or `undefined`', () => {
       assert.strictEqual(
         JSONZ.stringify({ a: 1, b: 2 }, (key, value) => (key === 'b') ? JSONZ.DELETE : value),
@@ -556,25 +604,9 @@ describe('stringify', () => {
       );
     });
 
-    it('sets `this` to the parent value', () => {
-      assert.strictEqual(
-        JSONZ.stringify({ a: { b: 1 } }, function (k, v) { return (k === 'b' && this.b) ? 2 : v; }),
-        '{a:{b:2}}'
-      );
-    });
-
     it('is called after toJSON', () => {
       function C() {}
       Object.assign(C.prototype, { toJSON() { return { a: 1, b: 2 }; } });
-      assert.strictEqual(
-        JSONZ.stringify(new C(), (key, value) => (key === 'a') ? 2 : value),
-        '{a:2,b:2}'
-      );
-    });
-
-    it('is called after toJSONZ', () => {
-      function C() {}
-      Object.assign(C.prototype, { toJSONZ() { return { a: 1, b: 2 }; } });
       assert.strictEqual(
         JSONZ.stringify(new C(), (key, value) => (key === 'a') ? 2 : value),
         '{a:2,b:2}'
@@ -741,5 +773,24 @@ describe('stringify', () => {
         ? JSONZ.LITERALLY_AS('0x' + v.toString(16).toUpperCase())
         : v
     ), '0xDECAF');
+  });
+
+  describe('very long strings', () => {
+    it('parse long string (1MB)', () => {
+      const s = 'a'.repeat(1000 * 1000);
+      assert.strictEqual(JSONZ.parse(`'${s}'`), s);
+    });
+
+    it('parse long escaped string (20KB)', () => {
+      const s = '\\t'.repeat(10000);
+      assert.strictEqual(JSONZ.parse(`'${s}'`), s.replace(/\\t/g, '\t'));
+    });
+
+    // Let's not run this slow test all the time.
+    xit('parse long string (100MB)', function () {
+      this.timeout(15000);
+      const s = 'z'.repeat(100 * 1000 * 1000);
+      assert.strictEqual(JSONZ.parse(`'${s}'`), s);
+    });
   });
 });

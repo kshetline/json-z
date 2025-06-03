@@ -4,12 +4,13 @@
   "plugins": ["chai-friendly", "@typescript-eslint"],
   "extends": [
     "standard",
-    "plugin:node/recommended"
+    "plugin:n/recommended"
   ],
   "parserOptions": {
     "sourceType": "module",
     "ecmaVersion": 2023
   },
+  "ignorePatterns": ["*.d.ts"],
   "rules": {
     "array-bracket-spacing": [
       "error",
@@ -20,6 +21,10 @@
       "as-needed"
     ],
     "brace-style": ["error", "stroustrup", { "allowSingleLine": true }],
+    "camelcase": [
+      "error",
+      { "allow": ["^LOWER_[a-z]", "^_\\$"] }
+    ],
     "comma-dangle": [
       "error",
       "never"
@@ -31,9 +36,10 @@
     ],
     "no-process-exit": "off",
     "no-prototype-builtins": "off",
-    "node/no-unpublished-require": "off",
-    "node/no-unsupported-features/es-syntax": "off",
-    "node/shebang": "off",
+    "n/no-process-exit": "off",
+    "n/no-unpublished-require": "off",
+    "n/no-unsupported-features/es-syntax": "off",
+    "n/shebang": "off",
     "no-unused-expressions": "off",
     "chai-friendly/no-unused-expressions": "error",
     "object-curly-spacing": [
@@ -51,6 +57,11 @@
         "named": "never",
         "asyncArrow": "always"
       }
+    ],
+    "yoda": [
+      "error",
+      "never",
+      { "exceptRange": true }
     ]
   },
   "overrides": [
