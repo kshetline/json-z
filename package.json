@@ -92,5 +92,8 @@
     "sinon": "^20.0.0",
     "typescript": "^5.8.3",
     "unicode-10.0.0": "^0.7.5"
+  },
+  "overrides": {
+    "eslint": "$eslint"
   }
 }
