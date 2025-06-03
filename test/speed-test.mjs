@@ -1,3 +1,4 @@
+// noinspection JSUnresolvedReference
 /* eslint-disable camelcase */
 import { requestText } from 'by-request';
 import benchmark from 'benchmark';
@@ -6,6 +7,7 @@ import vm from 'vm';
 const sample = (await requestText('https://shetline.com/40mb.json'));
 const sample2 = sample.replace(/\s*]\s*$/s, '') +
                `,{"bigString":"${'a'.repeat(20 * 1024 * 1024)}"}]`;
+const sample3 = (await requestText('https://shetline.com/flights-1m.json'));
 const JSON5_src = await requestText('https://unpkg.com/json5@2.2.3/dist/index.min.js');
 const JSONZ_old_src = await requestText('https://unpkg.com/json-z@5.0.1/dist/index.min.js');
 
@@ -14,16 +16,15 @@ vm.runInThisContext(JSONZ_old_src);
 
 // Current version of JSON-Z
 const JSONZ = (await import('../lib/index.js')).default;
-// noinspection JSUnresolvedReference
 const JSON5 = global.JSON5;
 const JSONZ_old = global.JSONZ;
 
-function runSuiteOnSampleJson(json, title) {
+function runSuiteOnSampleJson(json, title, reviver) {
   const suite = new benchmark.Suite();
-  suite.add('JSON', () => JSON.parse(json));
-  suite.add('JSON5', () => JSON5.parse(json));
-  suite.add('Old JSONZ', () => JSONZ_old.parse(json));
-  suite.add('JSONZ', () => JSONZ.parse(json));
+  suite.add('JSON', () => JSON.parse(json, reviver));
+  suite.add('JSON5', () => JSON5.parse(json, reviver));
+  suite.add('Old JSON-Z', () => JSONZ_old.parse(json, reviver));
+  suite.add('JSON-Z', () => JSONZ.parse(json, reviver));
 
   suite.on('cycle', event =>
     console.log(String(event.target))
@@ -52,7 +53,7 @@ function runSuiteOnSampleJson(json, title) {
       maxLineLength = Math.max(maxLineLength, lines[i].length);
     }
 
-    let header = `--- ${title} benchmarks (ranked) ---`;
+    let header = `- ${title} benchmarks (ranked) -`;
     const half = (maxLineLength - header.length) / 2;
 
     header = '\n\n' + '-'.repeat(Math.floor(half)) + header + '-'.repeat(Math.ceil(half));
@@ -66,3 +67,5 @@ function runSuiteOnSampleJson(json, title) {
 
 runSuiteOnSampleJson(sample, '40 MB sample');
 runSuiteOnSampleJson(sample2, '60 MB long string sample');
+runSuiteOnSampleJson(sample3, 'Flight data sample');
+runSuiteOnSampleJson(sample3, 'Flight data with reviver', (k, v) => (k === 'FL_DATE' ? new Date(v) : v));
