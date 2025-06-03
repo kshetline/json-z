@@ -8,7 +8,7 @@
   "browser": "dist/index.min.js",
   "types": "dist/index.d.ts",
   "bin": {
-    "json-z": "lib/cli.js"
+    "json-z": "dist/cli.js"
   },
   "files": [
     "lib/",
@@ -61,6 +61,7 @@
     ]
   },
   "devDependencies": {
+    "@rollup/plugin-json": "^6.1.0",
     "@rollup/plugin-terser": "^0.4.4",
     "@types/chai": "^4.3.1",
     "@types/mocha": "^9.1.1",
@@ -89,6 +90,7 @@
     "rollup-plugin-commonjs": "^10.1.0",
     "rollup-plugin-dts": "^6.2.1",
     "rollup-plugin-node-resolve": "^5.2.0",
+    "rollup-plugin-preserve-shebang": "^1.0.1",
     "sinon": "^20.0.0",
     "typescript": "^5.8.3",
     "unicode-10.0.0": "^0.7.5"
