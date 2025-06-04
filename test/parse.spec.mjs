@@ -846,14 +846,14 @@ describe('very long strings', () => {
 describe('line ending agnosticism', () => {
   it('counts lines correctly', () => {
     try {
-      JSONZ.parse('[1,\n,2,\r3,\r\n4,\u20285,\u2029,?]');
+      JSONZ.parse('[1,\n2,\r3,\r\n4,\u20285,\u2029?]');
       expect(false).to.be.ok;
     }
     catch (err) {
       expect(err instanceof SyntaxError &&
         /^JSON-Z: invalid character/.test(err.message) &&
         err.lineNumber === 6 &&
-        err.columnNumber === 2).to.be.ok;
+        err.columnNumber === 1).to.be.ok;
     }
   });
 });
