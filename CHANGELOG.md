@@ -1,7 +1,7 @@
 ### 5.1.1
 
 * Smarter array item deletion via replacers and revivers.
-* Minor code cleanup.
+* Correct line counting with mixed line ending formats.
 
 ### 5.1.0
 
