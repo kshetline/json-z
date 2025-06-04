@@ -602,6 +602,24 @@ describe('stringify', () => {
         }),
         '[1,77]'
       );
+
+      assert.strictEqual(
+        JSONZ.stringify([1, 2, 3, 4, 5], (key, value, holder) => {
+          if (key === '2') {
+            holder.splice(2, 1);
+            return JSONZ.DELETE;
+          }
+          else {
+            return value;
+          }
+        }),
+        '[1,2,4,5]'
+      );
+
+      assert.strictEqual(
+        JSONZ.stringify([1, 2, 3, 4, 5], (key, value) => key === '2' ? JSONZ.DELETE : value),
+        '[1,2,,4,5]'
+      );
     });
 
     it('is called after toJSON', () => {
