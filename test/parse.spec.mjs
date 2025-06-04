@@ -822,4 +822,23 @@ it('global parse options', () => {
     [1, 2, 77, 4],
     'global reviver can be cleared by reset'
   );
+
+  describe('very long strings', () => {
+    it('parse long string (1MB)', () => {
+      const s = 'a'.repeat(1000 * 1000);
+      assert.strictEqual(JSONZ.parse(`'${s}'`), s);
+    });
+
+    it('parse long escaped string (20KB)', () => {
+      const s = '\\t'.repeat(10000);
+      assert.strictEqual(JSONZ.parse(`'${s}'`), s.replace(/\\t/g, '\t'));
+    });
+
+    // Let's not run this slow test all the time.
+    xit('parse long string (100MB)', function () {
+      this.timeout(15000);
+      const s = 'z'.repeat(100 * 1000 * 1000);
+      assert.strictEqual(JSONZ.parse(`'${s}'`), s);
+    });
+  });
 });
