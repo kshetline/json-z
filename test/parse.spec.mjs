@@ -355,7 +355,7 @@ describe('JSONZ', () => {
     expect(equalBigNumber(JSONZ.parse('-Infinity_m'), BigDecimal(-Infinity))).to.be.ok; // parses -Infinity_m
 
     JSONZ.setBigDecimal(null);
-    expect(big.getBigDecimalType() === 'number').to.be.ok; // can disable big decimal support
+    expect(big.hasBigDecimal()).to.be.false; // can disable big decimal support
     expect(typeof JSONZ.parse('4m') === 'number').to.be.ok; // can parse big decimal as primitive number
     JSONZ.setBigDecimal(BigDecimal);
   });
@@ -390,7 +390,7 @@ describe('JSONZ', () => {
     expect(equalBigNumber(JSONZ.parse('-Infinity_d'), new Decimal(-Infinity))).to.be.ok; // parses -Infinity_d
 
     JSONZ.setDecimal(null);
-    expect(big.getDecimalType() === 'number').to.be.ok; // can disable fixed big decimal support
+    expect(big.hasDecimal()).to.be.false; // can disable fixed big decimal support
     expect(typeof JSONZ.parse('4d') === 'number').to.be.ok; // can parse fixed big decimal as primitive number
     JSONZ.setDecimal(Decimal);
   });
