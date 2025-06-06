@@ -679,6 +679,13 @@ it('parse(text, reviver)', () => {
   );
 
   expect(
+    JSONZ.parse('[1,1,2,3,5,5.5,8,5.5,13,221,21,221]', (k, v) => v === 5.5 ? JSONZ.DELETE : v === 221 ? JSONZ.EXCISE : v)).to.deep.equal(
+    // eslint-disable-next-line no-sparse-arrays
+    [1, 1, 2, 3, 5,, 8,, 13, 21],
+    '`JSONZ.DELETE` and `JSONZ.EXCISE` work properly together'
+  );
+
+  expect(
     JSONZ.parse('{a:1,b:2,c:3}', (k, v) => k === 'b' ? JSONZ.EXCISE : v)).to.deep.equal(
     JSONZ.parse('{a:1,b:2,c:3}', (k, v) => k === 'b' ? JSONZ.DELETE : v),
     '`JSONZ.EXCISE` works identically to `JSONZ.DELETE` when used on objects'
