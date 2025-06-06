@@ -1,7 +1,8 @@
-### 5.1.1
+### 5.2.0
 
-* Smarter array item deletion via replacers and revivers.
-* Correct line counting with mixed line ending formats.
+* Added `JSON.EXCISE` return value for replacers and revivers, allowing array items to be conveniently deleted along with their slot in an array.
+* Smarter array item deletion via replacers and revivers if those functions manipulate parent array sizes.
+* Correct line counting with mixed line ending formats (relevant for how the locations of errors are reported).
 
 ### 5.1.0
 

@@ -23,5 +23,6 @@ export declare function unwrap(obj: any): any;
 export declare function getCodePointLength(c?: number): number;
 
 export const DELETE: Symbol;
+export const EXCISE: Symbol;
 export const LITERALLY_AS: (value: string) => any;
 export const UNDEFINED: Symbol;

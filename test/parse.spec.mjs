@@ -673,6 +673,18 @@ it('parse(text, reviver)', () => {
   );
 
   expect(
+    JSONZ.parse('[0,1,2]', (k, v) => k === '1' ? JSONZ.EXCISE : v)).to.deep.equal(
+    [0, 2],
+    'deletes array values and shrinks array using `JSONZ.EXCISE`'
+  );
+
+  expect(
+    JSONZ.parse('{a:1,b:2,c:3}', (k, v) => k === 'b' ? JSONZ.EXCISE : v)).to.deep.equal(
+    JSONZ.parse('{a:1,b:2,c:3}', (k, v) => k === 'b' ? JSONZ.DELETE : v),
+    '`JSONZ.EXCISE` works identically to `JSONZ.DELETE` when used on objects'
+  );
+
+  expect(
     JSONZ.parse('33', () => JSONZ.DELETE)).to.equal(
     undefined,
     'returns undefined if top-level value is deleted'

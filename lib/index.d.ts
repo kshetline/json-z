@@ -6,7 +6,7 @@ export {
 } from './options-manager';
 export { parse } from './parse';
 export { stringify } from './stringify';
-export { DELETE, LITERALLY_AS, UNDEFINED } from './util';
+export { DELETE, EXCISE, LITERALLY_AS, UNDEFINED } from './util';
 
 declare const JSONZ;
 

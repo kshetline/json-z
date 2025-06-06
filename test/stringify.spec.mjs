@@ -622,6 +622,20 @@ describe('stringify', () => {
       );
     });
 
+    it('can shrink array using JSONZ.EXCISE`', () => {
+      assert.strictEqual(
+        JSONZ.stringify([1, 2, 3, 4, 5], (key, value) => key === '2' ? JSONZ.EXCISE : value),
+        '[1,2,4,5]'
+      );
+    });
+
+    it('`JSONZ.EXCISE` works identically to `JSONZ.DELETE` when used on objects`', () => {
+      assert.strictEqual(
+        JSONZ.stringify({ a: 1, b: 2, c: 3 }, (k, v) => k === 'b' ? JSONZ.EXCISE : v),
+        JSONZ.stringify({ a: 1, b: 2, c: 3 }, (k, v) => k === 'b' ? JSONZ.DELETE : v)
+      );
+    });
+
     it('is called after toJSON', () => {
       function C() {}
       Object.assign(C.prototype, { toJSON() { return { a: 1, b: 2 }; } });
