@@ -355,7 +355,7 @@ describe('JSONZ', () => {
     expect(equalBigNumber(JSONZ.parse('-Infinity_m'), BigDecimal(-Infinity))).to.be.ok; // parses -Infinity_m
 
     JSONZ.setBigDecimal(null);
-    expect(big.getBigDecimalType() === 'number').to.be.ok; // can disable big decimal support
+    expect(big.hasBigDecimal()).to.be.false; // can disable big decimal support
     expect(typeof JSONZ.parse('4m') === 'number').to.be.ok; // can parse big decimal as primitive number
     JSONZ.setBigDecimal(BigDecimal);
   });
@@ -390,7 +390,7 @@ describe('JSONZ', () => {
     expect(equalBigNumber(JSONZ.parse('-Infinity_d'), new Decimal(-Infinity))).to.be.ok; // parses -Infinity_d
 
     JSONZ.setDecimal(null);
-    expect(big.getDecimalType() === 'number').to.be.ok; // can disable fixed big decimal support
+    expect(big.hasDecimal()).to.be.false; // can disable fixed big decimal support
     expect(typeof JSONZ.parse('4d') === 'number').to.be.ok; // can parse fixed big decimal as primitive number
     JSONZ.setDecimal(Decimal);
   });
@@ -673,6 +673,25 @@ it('parse(text, reviver)', () => {
   );
 
   expect(
+    JSONZ.parse('[0,1,2]', (k, v) => k === '1' ? JSONZ.EXCISE : v)).to.deep.equal(
+    [0, 2],
+    'deletes array values and shrinks array using `JSONZ.EXCISE`'
+  );
+
+  expect(
+    JSONZ.parse('[1,1,2,3,5,5.5,8,5.5,13,221,21,221]', (k, v) => v === 5.5 ? JSONZ.DELETE : v === 221 ? JSONZ.EXCISE : v)).to.deep.equal(
+    // eslint-disable-next-line no-sparse-arrays
+    [1, 1, 2, 3, 5,, 8,, 13, 21],
+    '`JSONZ.DELETE` and `JSONZ.EXCISE` work properly together'
+  );
+
+  expect(
+    JSONZ.parse('{a:1,b:2,c:3}', (k, v) => k === 'b' ? JSONZ.EXCISE : v)).to.deep.equal(
+    JSONZ.parse('{a:1,b:2,c:3}', (k, v) => k === 'b' ? JSONZ.DELETE : v),
+    '`JSONZ.EXCISE` works identically to `JSONZ.DELETE` when used on objects'
+  );
+
+  expect(
     JSONZ.parse('33', () => JSONZ.DELETE)).to.equal(
     undefined,
     'returns undefined if top-level value is deleted'
@@ -822,4 +841,38 @@ it('global parse options', () => {
     [1, 2, 77, 4],
     'global reviver can be cleared by reset'
   );
+});
+
+describe('very long strings', () => {
+  it('parse long string (1MB)', () => {
+    const s = 'a'.repeat(1000 * 1000);
+    assert.strictEqual(JSONZ.parse(`'${s}'`), s);
+  });
+
+  it('parse long escaped string (20KB)', () => {
+    const s = '\\t'.repeat(10000);
+    assert.strictEqual(JSONZ.parse(`'${s}'`), s.replace(/\\t/g, '\t'));
+  });
+
+  // Let's not run this slow test all the time.
+  xit('parse long string (100MB)', function () {
+    this.timeout(15000);
+    const s = 'z'.repeat(100 * 1000 * 1000);
+    assert.strictEqual(JSONZ.parse(`'${s}'`), s);
+  });
+});
+
+describe('line ending agnosticism', () => {
+  it('counts lines correctly', () => {
+    try {
+      JSONZ.parse('[1,\n2,\r3,\r\n4,\u20285,\u2029?]');
+      expect(false).to.be.ok;
+    }
+    catch (err) {
+      expect(err instanceof SyntaxError &&
+        /^JSON-Z: invalid character/.test(err.message) &&
+        err.lineNumber === 6 &&
+        err.columnNumber === 1).to.be.ok;
+    }
+  });
 });

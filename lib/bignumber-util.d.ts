@@ -1,7 +1,5 @@
 import { JsonZOptions, Quote } from './options-manager';
 
-export function getBigDecimalType(): string;
-export function getDecimalType(): string;
 export function hasBigDecimal(): boolean;
 export function hasDecimal(): boolean;
 export function isBigDecimal(value: unknown): boolean;

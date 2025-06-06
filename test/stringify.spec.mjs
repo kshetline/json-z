@@ -602,6 +602,38 @@ describe('stringify', () => {
         }),
         '[1,77]'
       );
+
+      assert.strictEqual(
+        JSONZ.stringify([1, 2, 3, 4, 5], (key, value, holder) => {
+          if (key === '2') {
+            holder.splice(2, 1);
+            return JSONZ.DELETE;
+          }
+          else {
+            return value;
+          }
+        }),
+        '[1,2,4,5]'
+      );
+
+      assert.strictEqual(
+        JSONZ.stringify([1, 2, 3, 4, 5], (key, value) => key === '2' ? JSONZ.DELETE : value),
+        '[1,2,,4,5]'
+      );
+    });
+
+    it('can shrink array using JSONZ.EXCISE`', () => {
+      assert.strictEqual(
+        JSONZ.stringify([1, 2, 3, 4, 5], (key, value) => key === '2' ? JSONZ.EXCISE : value),
+        '[1,2,4,5]'
+      );
+    });
+
+    it('`JSONZ.EXCISE` works identically to `JSONZ.DELETE` when used on objects`', () => {
+      assert.strictEqual(
+        JSONZ.stringify({ a: 1, b: 2, c: 3 }, (k, v) => k === 'b' ? JSONZ.EXCISE : v),
+        JSONZ.stringify({ a: 1, b: 2, c: 3 }, (k, v) => k === 'b' ? JSONZ.DELETE : v)
+      );
     });
 
     it('is called after toJSON', () => {
@@ -773,24 +805,5 @@ describe('stringify', () => {
         ? JSONZ.LITERALLY_AS('0x' + v.toString(16).toUpperCase())
         : v
     ), '0xDECAF');
-  });
-
-  describe('very long strings', () => {
-    it('parse long string (1MB)', () => {
-      const s = 'a'.repeat(1000 * 1000);
-      assert.strictEqual(JSONZ.parse(`'${s}'`), s);
-    });
-
-    it('parse long escaped string (20KB)', () => {
-      const s = '\\t'.repeat(10000);
-      assert.strictEqual(JSONZ.parse(`'${s}'`), s.replace(/\\t/g, '\t'));
-    });
-
-    // Let's not run this slow test all the time.
-    xit('parse long string (100MB)', function () {
-      this.timeout(15000);
-      const s = 'z'.repeat(100 * 1000 * 1000);
-      assert.strictEqual(JSONZ.parse(`'${s}'`), s);
-    });
   });
 });

@@ -93,6 +93,7 @@ The following features, which are not supported in standard JSON, have been adde
 - When a replacer function returns `undefined` for the value of an item, for consistency with JSON replacer functions, that with cause the item to be deleted from the result. `JSONZ.DELETE` can also be used for this purpose, and *is the only way to delete an object or array item with a value that is originally `undefined`.*
 - Since JSON-Z can handle explicit `undefined` values, a replacer function can return the special value `JSONZ.UNDEFINED` to replace an item’s value with `undefined`.
 - Replacer functions can return the special value `JSONZ.DELETE` to indicate that a slot in an array be left empty, creating a sparse array.
+- Replacer functions can return the special value `JSONZ.EXCISE` to indicate that a slot in an array should be deleted, removing the value and making the parent array length smaller as a result.
 - A global replacer function can be specified.
 - For the benefit of anonymous (arrow) functions, which do not have their own `this` as `functions` do, replacer functions are passed the holder of a key/value pair as a third argument to the function.
 - A replacer can return `JSONZ.LITERALLY_AS(`*string-value*`)` to specify [exactly how a given value will be stringified](#jsonzliterally_as).
@@ -101,6 +102,7 @@ The following features, which are not supported in standard JSON, have been adde
 
 - A global reviver function can be specified.
 - For the benefit of anonymous (arrow) functions, which do not have their own `this`, reviver functions are passed the holder of a key/value pair as, or along with, the third argument to the function.
+- Just as described above for replacer functions, reviver function can return the special values `JSONZ.DELETE`, `JSONZ.EXCISE`, and `JSONZ.UNDEFINED`.
 
 ### Extended types (JSON-Z specific)
 
@@ -217,9 +219,11 @@ The third argument passed to a JSON-Z reviver *might* be different from what a `
 > - `extra`: This is either a `context` object containing a `source` string, as described at the link above, or the holder of the value, i.e., the object or array, if any, which contains the given key/value pair.
 > - `noContext`: if `true`, `extra` is the `holder` object or array which contains the current key/value pair. Otherwise, `value` is a primitive value, and `extra` functions like the (nearly) standard `context` object, containing a `source` string, but also containing a `holder` value as well.
 > 
-> Returns: Either the original `value`, `JSONZ.DELETE`, or a modified value (using `JSONZ.UNDEFINED` to change a value to `undefined`).
+> Returns: Either the original `value`, `JSONZ.DELETE`, `JSONZ.EXCISE`, or a modified value (using `JSONZ.UNDEFINED` to change a value to `undefined`).
 
-Please note that if you want to shrink the size of a containing array when using a reviver to delete an array element, you must both perform `holder.splice(parseInt(key), 1)` within the replacer and then return `JSONZ.DELETE` from the replacer function. Returning `JSONZ.DELETE` alone will simply result in a sparse array with an empty slot.
+Returning `JSONZ.DELETE` for an item in an array will result in a sparse array with an empty slot, with the length of the array _remaining the same_.
+
+Returning `JSONZ.EXCISE` for an item in an array will delete the corresponding slot in the parent array, with the length of the array _becoming shorter by 1_.
 
 #### Return value
 
@@ -244,7 +248,7 @@ This works very much like [`JSON.stringify`](https://developer.mozilla.org/en-US
   When using the standard `JSON.stringify()`, a replacer function is called with two arguments: `key` and `value`. JSON-Z adds a third argument, `holder`. This value is already available to standard replacer `function`s as `this`, but `this` won't be bound the holder when using an anonymous (arrow) function as a replacer. The JSON-Z third argument (which can be ignored if not needed) provides alternative access to the holder value.<br><br>
   > `replacer(key, value[, holder])`
 
-  <br>Please note that if you want to shrink the size of a containing array when using a replacer to delete an array element, you must both perform `‑‑holder.length` within the replacer and then return `JSONZ.DELETE` from the replacer function. Returning `JSONZ.DELETE` alone will simply result in a sparse array with an empty slot.
+  <br>Please note that if you want to shrink the size of a parent array when using a replacer to delete an array element, return `JSONZ.EXCISE`. If you return `JSONZ.DELETE` from the replacer function, the result will be a sparse parent array, retaining its original length and containing an empty slot.
   
 - `space`: A string or number used to insert whitespace into the output JSON-Z string for readability purposes. If this is a number, it indicates the number of space characters to use as whitespace; this number is capped at 10. Values less than 1 indicate that no space should be used. If `space` is a string, that string (or the first 10 characters of the string if it's longer) is used as white space. A single space adds white space without adding indentation. If this parameter is not provided (or is null), no whitespace is added. If indenting white space is used, trailing commas can optionally appear in objects and arrays.
 - `options`: This can either be an `OptionSet` value (see [below](#jsonzsetoptionsoptions-additionaloptions)), or an object with the following properties:
@@ -423,7 +427,11 @@ This restores all built-in type handlers, leaving any user-added type handlers.
 
 ### JSONZ.DELETE
 
-Return this value from a replacer function to delete an item from an object or to render a slot in an array as empty.
+Return this value from a replacer or reviver function to delete an item from an object or to render a slot in an array as empty, not modifying the length of an array.
+
+### JSONZ.EXCISE
+
+Return this value from a replacer or reviver function to delete a slot in an array, making the array shorter by 1.
 
 ### JSONZ.UNDEFINED
 

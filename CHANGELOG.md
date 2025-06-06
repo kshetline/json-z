@@ -1,3 +1,9 @@
+### 5.2.0
+
+* Added `JSON.EXCISE` return value for replacers and revivers, allowing array items to be conveniently deleted along with their slot in an array.
+* Smarter array item deletion via replacers and revivers if those functions manipulate parent array sizes.
+* Correct line counting with mixed line ending formats (relevant for how the locations of errors are reported).
+
 ### 5.1.0
 
 * Approximately 3–4 times faster parsing than 5.0.x versions.
@@ -39,7 +45,7 @@ Minor documentation tweak.
 ### 4.0.0
 
 * Added complete grammar documentation.
-* Support for older versions of JavaScript which do not handle BigInt dropped.
+* Support for older versions of JavaScript, which do not handle BigInt, dropped.
 * Related API for setting an external BigInt handler removed.
 * Fixed-precision decimal numbers are now explicitly IEEE 754 Decimal128 numbers.
 * Nomenclature to distinguish between fixed-precision and arbitrary-precision decimals has changed. It's now simply Decimal or BigDecimal rather than FixedBigDecimal or BigDecimal.
