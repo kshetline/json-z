@@ -102,7 +102,7 @@ The following features, which are not supported in standard JSON, have been adde
 
 - A global reviver function can be specified.
 - For the benefit of anonymous (arrow) functions, which do not have their own `this`, reviver functions are passed the holder of a key/value pair as, or along with, the third argument to the function.
-- Just as described above for replacer functions, reviver function can return the special values `JSONZ.DELETE`, `JSONZ.EXCISE`, and `JSONZ.UNDEFINED`.
+- Just as described above for replacer functions, reviver functions can return the special values `JSONZ.DELETE`, `JSONZ.EXCISE`, and `JSONZ.UNDEFINED`.
 
 ### Extended types (JSON-Z specific)
 
