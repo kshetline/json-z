@@ -228,10 +228,10 @@ describe('parse', () => {
       )
     );
 
-    it('parses leading decimal points', () =>
+    it('parses leading and trailing decimal points', () =>
       expect(
-        JSONZ.parse('[.1,.23]')).to.deep.equal(
-        [0.1, 0.23]
+        JSONZ.parse('[.1,.23,-4.]')).to.deep.equal(
+        [0.1, 0.23, -4]
       )
     );
 
