@@ -1,5 +1,6 @@
 ### 6.0.0
 
+* Added `maxIndent`, `noIndent`, and `propertyFilter` stringification options.
 * Added `context` callback parameter for both replacers and revivers with `context.holder` and `context.stack` values.
 * The above results in a breaking change from 5.x versions of JSON-Z, where the third parameter of a replacer/reviver callback _might_ be expected, _depending on context_, to be a holder object. This change results in a more consistent callback paradigm.
 

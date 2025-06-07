@@ -504,6 +504,20 @@ describe('stringify', () => {
       assert.strictEqual(JSONZ.stringify({ a: { b: 2 } }, null, 2), '{\n  a: {\n    b: 2\n  }\n}');
     });
 
+    it('suppresses indentation of selected keys', () => {
+      assert.strictEqual(JSONZ.stringify({ a: [1, 2], b: [3, 4], c: [5, 6] }, { oneLiners: 'b,c', space: 2 }),
+        '{\n  a: [\n    1,\n    2\n  ],\n  b: [3, 4],\n  c: [5, 6]\n}');
+      assert.strictEqual(JSONZ.stringify({ a: [1, 2], b: [3, 4], c: [5, 6] }, { oneLiners: ['b'], space: 2 }),
+        '{\n  a: [\n    1,\n    2\n  ],\n  b: [3, 4],\n  c: [\n    5,\n    6\n  ]\n}');
+      assert.strictEqual(JSONZ.stringify({ a: [1, 2], b: { x: 3, y: 4 }, c: [5, 6] }, { oneLiners: new Set(['b']), space: 2 }),
+        '{\n  a: [\n    1,\n    2\n  ],\n  b: {x: 3, y: 4},\n  c: [\n    5,\n    6\n  ]\n}');
+    });
+
+    it('suppresses indentation greater than maxIndent', () => {
+      assert.strictEqual(JSONZ.stringify({ a: [1, 2], b: [3, 4, [5, 6]], c: { d: 7, e: { f: 8 } } }, { maxIndent: 2, space: 2 }),
+        '{\n  a: [\n    1,\n    2\n  ],\n  b: [\n    3,\n    4,\n    [5, 6]\n  ],\n  c: {\n    d: 7,\n    e: {f: 8}\n  }\n}');
+    });
+
     it('accepts Number objects', () => {
       assert.strictEqual(JSONZ.stringify([1], null, new Number(2)), '[\n  1\n]');
     });
@@ -667,6 +681,10 @@ describe('stringify', () => {
 
     it('accepts trailingComma as an option', () => {
       assert.strictEqual(JSONZ.stringify([1], { trailingComma: true, space: 2 }), '[\n  1,\n]');
+    });
+
+    it('filters keys when propertyFilter option is provided', () => {
+      assert.strictEqual(JSONZ.stringify({ a: 1, b: 2, 3: 3 }, { propertyFilter: ['a', 3] }), "{a:1,'3':3}");
     });
   });
 

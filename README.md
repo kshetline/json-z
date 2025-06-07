@@ -12,7 +12,7 @@ JSON-Z is a superset of [JSON] (and of [JSONC] and [JSON5] as well) which aims t
 
 JSON-Z is designed to increase flexibility when parsing while, by default, maintaining maximum compatibility with standard JSON when stringifying data (unless the user, through optional settings, eschews this compatibility).
 
-JSON-Z output, like JSON and JSON5, is also valid JavaScript (with two *optional* exceptions).
+JSON-Z output, like JSON and JSON5, is also valid JavaScript (with two *optional* exceptions). JSON-Z output can be valid JSON with the right optional setttings.
 
 Even when the additional grammar features of JSON-Z are not needed, this library's replacer functions, reviver functions, and formatting capabilities provide additional capabilities which can be useful when dealing JSON and JSON5.
 
@@ -256,9 +256,12 @@ This works very much like [`JSON.stringify`](https://developer.mozilla.org/en-US
 - `options`: This can either be an `OptionSet` value (see [below](#jsonzsetoptionsoptions-additionaloptions)), or an object with the following properties:
   - `extendedPrimitives`: If `true` (the default is `false`) this enables direct stringification of `Infinity`, `-Infinity`, `NaN`, and `undefined`. Otherwise, these values become `null`.
   - `extendedTypes`: If `JSONZ.ExtendedTypeMode.AS_FUNCTIONS` or `JSONZ.ExtendedTypeMode.AS_OBJECTS` (the default is `JSONZ.ExtendedTypeMode.OFF`), this enables special representation of additional data types, such as `_Date("2019-07-28T08:49:58.202Z")`, which can be parsed directly as a JavaScript `Date` object, or `{"_$_": "Date", "_$_value": "2019-07-28T08:49:58.202Z"}`, which can be automatically rendered as a `Date` object by a built-in replacer.
-  - `primitiveBigDecimal`: 🧪 If `true` (the default is `false`) this enables direct stringification of arbitrary-precision big decimals using the '`m`' suffix. Otherwise, big decimals must be provided as quoted strings or extended types. _(Note: The '`m`' suffix can't be parsed as current valid JavaScript, but it is potentially a future valid standard notation.)_
+  - `maxIndent`: If a non-zero integer, this option limits levels of indentation, deeper than which object content will be rendered on a single line.
+  - `oneLiners`: An list of property names, the values for which should be rendered on a single line. This argument can be provided as an array, a `Set`, or a comma-delimited string of property names.
+  - `primitiveBigDecimal`: 🧪 If `true` (the default is `false`) this enables direct stringification of arbitrary-precision big decimals using the '`m`' suffix. Otherwise, big decimals must be provided as quoted strings or extended types. _(Note: The '`m`' suffix cannot be parsed as valid JavaScript, making this notation a deviation from JavaScript parsing compatibility.)_
   - `primitiveBigInt`: If `true` (the default is `false`) this enables direct stringification of big integers using the '`n`' suffix. Otherwise, big integers are provided as quoted strings or extended types.
-  - `primitiveDecimal`: 🧪 If `true` (the default is `false`) this enables direct stringification of fixed-precision big decimals using the '`d`' suffix. Otherwise, big decimals must be provided as quoted strings or extended types. _(Note: The '`d`' suffix can't be parsed as current valid JavaScript, but it is potentially a future valid standard notation.)_
+  - `primitiveDecimal`: 🧪 If `true` (the default is `false`) this enables direct stringification of fixed-precision big decimals using the '`d`' suffix. Otherwise, big decimals must be provided as quoted strings or extended types. _(Note: The '`d`' suffix cannot be parsed as valid JavaScript, making this notation a deviation from JavaScript parsing compatibility.)_
+  - `propertyFilter`: This option provides functionality identical to providing an array of property names for the `replacer`/`options` argument &mdash; only the object properties listed here will be rendered. Using this option allows additional options to be used simultaneously.
   - `quote`: A string representing the quote character to use when serializing strings (single quote `'` or double quote `"`), or one of the following values:
     - `JSONZ.Quote.DOUBLE`: Always quote with double quotes (this is the default).
     - `JSONZ.Quote.SINGLE`: Always quote with single quotes.

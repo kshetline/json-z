@@ -26,6 +26,9 @@ export const enum OptionSet {
 export interface JsonZOptions {
   extendedPrimitives?: boolean,
   extendedTypes?: ExtendedTypeMode,
+  maxIndent?: number;
+  oneLiners?: string | string[] | Set<string>;
+  propertyFilter?: (string | number | String | Number)[];
   primitiveBigDecimal?: boolean;
   primitiveBigInt?: boolean;
   primitiveDecimal?: boolean;
