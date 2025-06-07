@@ -107,7 +107,7 @@ explicit-octal = "0o", octal-digit, { [ "_" ], octal-digit } ;
 
 implied-octal = "0", octal-digit, { [ "_" ], octal-digit } ;
 
-decimal = "0", [ decimal-sequence, [ "_" ] ], { non-octal-sequence }-, [ "_" ], [ decimal-sequence ] | non-zero-digit, [ [ "_" ], decimal-sequence ] ;
+decimal = "0",  [ "_" ], [ decimal-sequence, [ "_" ] ], { non-octal-sequence }-, [ "_" ], [ decimal-sequence ] | non-zero-digit, [ [ "_" ], decimal-sequence ] ;
 
 decimal-sequence = decimal-digit, { [ "_" ], decimal-digit } ;
 
@@ -139,7 +139,7 @@ binary (* JSON-Z *) = "0b", { binary-digit}- ;
 
 octal (* JSON-Z *) = "0o", { octal-digit }- ;
 
-decimal = { decimal-digit }- ;
+decimal = 0 | non-zero-digit, { decimal-digit } ;
 
 hex (* JSON5 *) = "0x", { hex-digit }- ;
 
