@@ -187,7 +187,7 @@ comment (* JSONC *) = block-comment | line-comment ;
 
 block-comment = "/*", ? any characters not containing the sequence "*/" ?, "*/";
 
-line-comment = "//", ? any characters other than \n, \r, \u2028, or \u2029 ?, ( "\n" | "\r\n" | "\r" | ? LINE SEPARATOR ? (* JSON5 *) | ? PARAGRAPH SEPARATOR ? (* JSON5 *) ) ;
+line-comment = "//", ? any characters other than \n, \r, \u2028, or \u2029 ?, ( "\n" | "\r\n" | "\r"  |? end of input ? | ? LINE SEPARATOR ? (* JSON5 *) | ? PARAGRAPH SEPARATOR ? (* JSON5 *) ) ;
 
 @endebnf
 ```
