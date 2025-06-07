@@ -210,14 +210,16 @@ This works very much like [`JSON.parse`](https://developer.mozilla.org/en-US/doc
 
 A JSON-Z reviver function is a callback that works much like the not-quite-yet-standard `JSON.parse` reviver function from this proposal: https://github.com/tc39/proposal-json-parse-with-source, a proposal which has already been widely implemented.
 
-The third argument passed to a JSON-Z reviver *might* be different from what a `JSON.parse` reviver receives, according to the above proposal. There is a forth argument that clarifies the difference.
+The `context` argument passed to a JSON-Z reviver differs in that in provides two extra values described below.
 
-> `reviver(key, value[, extra[, noContext]])`
+> `reviver(key, value[, context])`
 > 
 > - `key`: The object key (or array index) of the value being parsed. The `key` is an empty string if the `value` is the root value.
 > - `value`: A value as originally parsed, which should be returned by the reviver as-is if the reviver is not modifying the original value.
-> - `extra`: This is either a `context` object containing a `source` string, as described at the link above, or the holder of the value, i.e., the object or array, if any, which contains the given key/value pair.
-> - `noContext`: if `true`, `extra` is the `holder` object or array which contains the current key/value pair. Otherwise, `value` is a primitive value, and `extra` functions like the (nearly) standard `context` object, containing a `source` string, but also containing a `holder` value as well.
+> - `context`:
+>   - `context.source`: A `source` string, as described at the link above, providing the original text from which a primitive value has been parsed. No `source` is provided for object or array values.
+>   - `context.holder`: The object or array, if any, which contains a given key/value pair.
+>   - `context.stack`: An array containing the heirarchy of keys/array indices leading up to the given value. For example, when parsing `"[0, 1, {foo: 77}]"`, and a reviver receives the value `77`, `context.stack` will be `['2', 'foo']`.
 > 
 > Returns: Either the original `value`, `JSONZ.DELETE`, `JSONZ.EXCISE`, or a modified value (using `JSONZ.UNDEFINED` to change a value to `undefined`).
 
@@ -245,8 +247,8 @@ This works very much like [`JSON.stringify`](https://developer.mozilla.org/en-US
 - `value`: The value to convert to a JSON-Z string.
 - `replacer`: A function which alters the behavior of the stringification process, or an array of String and Number objects that serve as an allowlist for selecting/filtering the properties of the value object to be included in the JSON-Z string. If this value is null or not provided, all properties of the object are included in the resulting JSON-Z string.
 
-  When using the standard `JSON.stringify()`, a replacer function is called with two arguments: `key` and `value`. JSON-Z adds a third argument, `holder`. This value is already available to standard replacer `function`s as `this`, but `this` won't be bound the holder when using an anonymous (arrow) function as a replacer. The JSON-Z third argument (which can be ignored if not needed) provides alternative access to the holder value.<br><br>
-  > `replacer(key, value[, holder])`
+  When using the standard `JSON.stringify()`, a replacer function is called with two arguments: `key` and `value`. JSON-Z adds a third argument, `context`. The `context` argument here (which can be dropped if not needed) is similar to the JSON-Z reviver `context` argument, albeit with no `context.source` value.<br><br>
+  > `replacer(key, value[, context])`
 
   <br>Please note that if you want to shrink the size of a parent array when using a replacer to delete an array element, return `JSONZ.EXCISE`. If you return `JSONZ.DELETE` from the replacer function, the result will be a sparse parent array, retaining its original length and containing an empty slot.
   

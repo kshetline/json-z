@@ -1,7 +1,7 @@
 /* eslint-disable quotes,dot-notation,no-new-wrappers */
 // noinspection JSUnresolvedReference,JSPrimitiveTypeWrapperUsage
 
-import { assert } from 'chai';
+import { assert, expect } from 'chai';
 import { Decimal } from 'proposal-decimal';
 import { Decimal as BigDecimal } from 'decimal.js';
 import DecimalLight from 'decimal.js-light';
@@ -591,9 +591,9 @@ describe('stringify', () => {
 
     it('can shrink array by manipulating holder', () => {
       assert.strictEqual(
-        JSONZ.stringify([1, 77, 3, undefined], (key, value, holder) => {
+        JSONZ.stringify([1, 77, 3, undefined], (key, value, context) => {
           if (key > 1) {
-            --holder.length;
+            --context.holder.length;
             return JSONZ.DELETE;
           }
           else {
@@ -604,9 +604,9 @@ describe('stringify', () => {
       );
 
       assert.strictEqual(
-        JSONZ.stringify([1, 2, 3, 4, 5], (key, value, holder) => {
+        JSONZ.stringify([1, 2, 3, 4, 5], (key, value, context) => {
           if (key === '2') {
-            holder.splice(2, 1);
+            context.holder.splice(2, 1);
             return JSONZ.DELETE;
           }
           else {
@@ -678,6 +678,27 @@ describe('stringify', () => {
     it('uses single quotes if provided', () => {
       assert.strictEqual(JSONZ.stringify({ "a'": "1'" }, { quote: "'" }), "{'a\\'':'1\\''}");
     });
+  });
+
+  describe('stringify(text, reviver) context.stack', () => {
+    it('correct object stack', () =>
+      JSONZ.stringify([0, 1, { a: 'foo' }, 3], (k, v, context) => {
+        if (v === 'foo') {
+          expect(context.stack).to.deep.equal(['2', 'a']);
+        }
+
+        return v;
+      })
+    );
+
+    it('only values of `bar` should be changed', () =>
+      expect(
+        JSONZ.stringify({ foo: [1, 2, 3], bar: [1, 2, 3] }, (k, v, context) => context.stack.at(-2) === 'bar' ? -1 : v
+        )).to.equal(
+        '{foo:[1,2,3],bar:[-1,-1,-1]}',
+        'only values of `bar` should be changed'
+      )
+    );
   });
 
   describe('global stringify options', () => {

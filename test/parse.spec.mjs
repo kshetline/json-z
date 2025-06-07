@@ -716,17 +716,34 @@ it('parse(text, reviver)', () => {
   );
 
   expect(
-    JSONZ.parse('{a:1234567890123456789001234567890,b:"x"}', function (k, v, context, noContext) {
-      if (typeof v === 'number' && !noContext) {
+    JSONZ.parse('{a:1234567890123456789001234567890,b:"x"}', function (k, v, context) {
+      if (typeof v === 'number') {
         return BigInt(context.source);
       }
-      else if (typeof v === 'string' && !noContext) {
+      else if (typeof v === 'string') {
         return context.source.replace(/"/g, '@');
       }
       return v;
     })).to.deep.equal(
     { a: 1234567890123456789001234567890n, b: '@x@' },
     'make sure content of primitive values is accessible'
+  );
+});
+
+it('parse(text, reviver) context.stack', () => {
+  JSONZ.parse('[0,1,{a:"foo"},3]', (k, v, context) => {
+    if (v === 'foo') {
+      expect(context.stack).to.deep.equal(['2', 'a'], 'correct object stack');
+    }
+
+    return v;
+  });
+
+  expect(
+    JSONZ.parse('{foo:[1,2,3],bar:[1,2,3]}', (k, v, context) => context.stack.at(-2) === 'bar' ? -1 : v
+    )).to.deep.equal(
+    { foo: [1, 2, 3], bar: [-1, -1, -1] },
+    'only values of `bar` should be changed'
   );
 });
 
@@ -757,8 +774,8 @@ it('parse(text, reviver) special cases', () => {
 
   expect(
     JSONZ.stringify(JSONZ.parse('[11,+11.,13,"q",`q`]',
-      (k, v, context, noContext) => {
-        if (!noContext) {
+      (k, v, context) => {
+        if (context?.source) {
           if (context.source === '+11.') {
             return 12;
           }
