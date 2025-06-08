@@ -504,6 +504,10 @@ describe('stringify', () => {
       assert.strictEqual(JSONZ.stringify({ a: { b: 2 } }, null, 2), '{\n  a: {\n    b: 2\n  }\n}');
     });
 
+    it("extended type value arguments don't get indented", () => {
+      assert.strictEqual(JSONZ.stringify([0, new Set([1, 2])], null, 2), '[\n  0,\n  _Set([1, 2])\n]');
+    });
+
     it('suppresses indentation of selected keys', () => {
       assert.strictEqual(JSONZ.stringify({ a: [1, 2], b: [3, 4], c: [5, 6] }, { oneLiners: 'b,c', space: 2 }),
         '{\n  a: [\n    1,\n    2\n  ],\n  b: [3, 4],\n  c: [5, 6]\n}');
@@ -685,6 +689,8 @@ describe('stringify', () => {
 
     it('filters keys when propertyFilter option is provided', () => {
       assert.strictEqual(JSONZ.stringify({ a: 1, b: 2, 3: 3 }, { propertyFilter: ['a', 3] }), "{a:1,'3':3}");
+      assert.strictEqual(JSONZ.stringify({ b: 2, 3: 3 }, { propertyFilter: ['a', 3] }), "{'3':3}");
+      assert.strictEqual(JSONZ.stringify({ a: 1, b: 2, c: 3 }, { propertyFilter: [] }), "{a:1,b:2,c:3}");
     });
   });
 
