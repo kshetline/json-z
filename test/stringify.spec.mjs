@@ -782,54 +782,73 @@ describe('stringify', () => {
       this.value = n * 2;
     }
 
-    JSONZ.setOptions({ space: 0 });
+    beforeEach(() => {
+      JSONZ.setOptions({ space: 0 });
 
-    JSONZ.addTypeHandler({
-      name: 'half',
-      test: obj => obj instanceof Half,
-      creator: value => new Half(value),
-      serializer: instance => (instance.value * 2)
+      JSONZ.addTypeHandler({
+        name: 'half',
+        test: obj => obj instanceof Half,
+        creator: value => new Half(value),
+        serializer: instance => (instance.value * 2)
+      });
+
+      JSONZ.addTypeHandler({
+        name: 'double',
+        test: obj => obj instanceof Double,
+        creator: value => new Double(value),
+        serializer: instance => (instance.value / 2)
+      });
     });
 
-    JSONZ.addTypeHandler({
-      name: 'double',
-      test: obj => obj instanceof Double,
-      creator: value => new Double(value),
-      serializer: instance => (instance.value / 2)
+    it('uses registered type handlers', () =>
+      assert.strictEqual(
+        JSONZ.stringify([new Half(6), new Double(7)]),
+        '[_half(6),_double(7)]'
+      )
+    );
+
+    it('appropriately handles removed type handlers', () => {
+      JSONZ.removeTypeHandler('half');
+      assert.strictEqual(
+        JSONZ.stringify([new Half(6), new Double(7)]),
+        '[{value:3},_double(7)]'
+      );
     });
-
-    assert.strictEqual(
-      JSONZ.stringify([new Half(6), new Double(7)]),
-      '[_half(6),_double(7)]'
-    );
-
-    JSONZ.removeTypeHandler('half');
-
-    assert.strictEqual(
-      JSONZ.stringify([new Half(6), new Double(7)]),
-      '[{value:3},_double(7)]'
-    );
 
     const dateStr = '2019-07-28T08:49:58.202Z';
     const date = new Date(dateStr);
 
-    JSONZ.removeTypeHandler('Date');
-    JSONZ.removeTypeHandler('notThere');
-    assert.strictEqual(JSONZ.stringify(date), "'2019-07-28T08:49:58.202Z'");
-    JSONZ.restoreStandardTypeHandlers();
-    assert.strictEqual(JSONZ.stringify([date, new Double(2)]), `[_Date('${dateStr}'),_double(2)]`);
-    JSONZ.resetStandardTypeHandlers();
-    assert.strictEqual(JSONZ.stringify(new Date(NaN)), '_Date(NaN)');
-    assert.strictEqual(JSONZ.stringify([date, new Double(2)]), `[_Date('${dateStr}'),{value:4}]`);
-    assert.strictEqual(JSONZ.stringify(new Set([4, 5])), '_Set([4,5])');
-    assert.strictEqual(JSONZ.stringify(new Map([['foo', 4], ['bar', 5]]), null, 1), "_Map([['foo', 4], ['bar', 5]])");
-    assert.strictEqual(JSONZ.stringify(new Uint8Array([0, 1, 2, 253, 254, 255])), "_Uint8Array('AAEC/f7/')");
+    it('stringifies Date in absence of default type handler', () => {
+      JSONZ.removeTypeHandler('Date');
+      JSONZ.removeTypeHandler('notThere');
+      assert.strictEqual(JSONZ.stringify(date), "'2019-07-28T08:49:58.202Z'");
+    });
 
-    assert.strictEqual(global._Date, undefined);
-    JSONZ.globalizeTypeHandlers();
-    assert.strictEqual(global._Date(dateStr).getTime(), date.getTime());
-    JSONZ.removeGlobalizedTypeHandlers();
-    assert.strictEqual(global._Date, undefined);
+    it('restores default type handlers, retaining added handlers', () => {
+      JSONZ.restoreStandardTypeHandlers();
+      assert.strictEqual(JSONZ.stringify([date, new Double(2)]), `[_Date('${dateStr}'),_double(2)]`);
+    });
+
+    it('resets type handlers, removing any added handlers', () => {
+      JSONZ.resetStandardTypeHandlers();
+      assert.strictEqual(JSONZ.stringify(new Date(NaN)), '_Date(NaN)');
+      assert.strictEqual(JSONZ.stringify([date, new Double(2)]), `[_Date('${dateStr}'),{value:4}]`);
+    });
+
+    it('supports various built-in type handlers', () => {
+      assert.strictEqual(JSONZ.stringify(new Set([4, 5])), '_Set([4,5])');
+      assert.strictEqual(JSONZ.stringify(new Map([['foo', 4], ['bar', 5]]), null, 1), "_Map([['foo', 4], ['bar', 5]])");
+      assert.strictEqual(JSONZ.stringify(new Uint8Array([0, 1, 2, 253, 254, 255])), "_Uint8Array('AAEC/f7/')");
+      assert.strictEqual(JSONZ.stringify(JSONZ.parse('_Uint8Array("T25l")'), { extendedTypes: 0 }), '[79,110,101]');
+    });
+
+    it('adds and removes globalized type handlers', () => {
+      assert.strictEqual(global._Date, undefined);
+      JSONZ.globalizeTypeHandlers();
+      assert.strictEqual(global._Date(dateStr).getTime(), date.getTime());
+      JSONZ.removeGlobalizedTypeHandlers();
+      assert.strictEqual(global._Date, undefined);
+    });
   });
 
   it('replacer LITERALLY_AS', () => {
