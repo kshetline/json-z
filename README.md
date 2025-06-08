@@ -12,7 +12,7 @@ JSON-Z is a superset of [JSON] (and of [JSONC] and [JSON5] as well) which aims t
 
 JSON-Z is designed to increase flexibility when parsing while, by default, maintaining maximum compatibility with standard JSON when stringifying data (unless the user, through optional settings, eschews this compatibility).
 
-JSON-Z output, like JSON and JSON5, is also valid JavaScript (with two *optional* exceptions).
+JSON-Z output, like JSON and JSON5, is also valid JavaScript (with two *optional* exceptions). JSON-Z output can be valid JSON with the right optional setttings.
 
 Even when the additional grammar features of JSON-Z are not needed, this library's replacer functions, reviver functions, and formatting capabilities provide additional capabilities which can be useful when dealing JSON and JSON5.
 
@@ -210,14 +210,16 @@ This works very much like [`JSON.parse`](https://developer.mozilla.org/en-US/doc
 
 A JSON-Z reviver function is a callback that works much like the not-quite-yet-standard `JSON.parse` reviver function from this proposal: https://github.com/tc39/proposal-json-parse-with-source, a proposal which has already been widely implemented.
 
-The third argument passed to a JSON-Z reviver *might* be different from what a `JSON.parse` reviver receives, according to the above proposal. There is a forth argument that clarifies the difference.
+The `context` argument passed to a JSON-Z reviver differs in that in provides two extra values described below.
 
-> `reviver(key, value[, extra[, noContext]])`
+> `reviver(key, value[, context])`
 > 
 > - `key`: The object key (or array index) of the value being parsed. The `key` is an empty string if the `value` is the root value.
 > - `value`: A value as originally parsed, which should be returned by the reviver as-is if the reviver is not modifying the original value.
-> - `extra`: This is either a `context` object containing a `source` string, as described at the link above, or the holder of the value, i.e., the object or array, if any, which contains the given key/value pair.
-> - `noContext`: if `true`, `extra` is the `holder` object or array which contains the current key/value pair. Otherwise, `value` is a primitive value, and `extra` functions like the (nearly) standard `context` object, containing a `source` string, but also containing a `holder` value as well.
+> - `context`:
+>   - `context.source`: A `source` string, as described at the link above, providing the original text from which a primitive value has been parsed. No `source` is provided for object or array values.
+>   - `context.holder`: The object or array, if any, which contains a given key/value pair.
+>   - `context.stack`: An array containing the heirarchy of keys/array indices leading up to the given value. For example, when parsing `"[0, 1, {foo: 77}]"`, and a reviver receives the value `77`, `context.stack` will be `['2', 'foo']`.
 > 
 > Returns: Either the original `value`, `JSONZ.DELETE`, `JSONZ.EXCISE`, or a modified value (using `JSONZ.UNDEFINED` to change a value to `undefined`).
 
@@ -245,8 +247,8 @@ This works very much like [`JSON.stringify`](https://developer.mozilla.org/en-US
 - `value`: The value to convert to a JSON-Z string.
 - `replacer`: A function which alters the behavior of the stringification process, or an array of String and Number objects that serve as an allowlist for selecting/filtering the properties of the value object to be included in the JSON-Z string. If this value is null or not provided, all properties of the object are included in the resulting JSON-Z string.
 
-  When using the standard `JSON.stringify()`, a replacer function is called with two arguments: `key` and `value`. JSON-Z adds a third argument, `holder`. This value is already available to standard replacer `function`s as `this`, but `this` won't be bound the holder when using an anonymous (arrow) function as a replacer. The JSON-Z third argument (which can be ignored if not needed) provides alternative access to the holder value.<br><br>
-  > `replacer(key, value[, holder])`
+  When using the standard `JSON.stringify()`, a replacer function is called with two arguments: `key` and `value`. JSON-Z adds a third argument, `context`. The `context` argument here (which can be dropped if not needed) is similar to the JSON-Z reviver `context` argument, albeit with no `context.source` value.<br><br>
+  > `replacer(key, value[, context])`
 
   <br>Please note that if you want to shrink the size of a parent array when using a replacer to delete an array element, return `JSONZ.EXCISE`. If you return `JSONZ.DELETE` from the replacer function, the result will be a sparse parent array, retaining its original length and containing an empty slot.
   
@@ -254,9 +256,12 @@ This works very much like [`JSON.stringify`](https://developer.mozilla.org/en-US
 - `options`: This can either be an `OptionSet` value (see [below](#jsonzsetoptionsoptions-additionaloptions)), or an object with the following properties:
   - `extendedPrimitives`: If `true` (the default is `false`) this enables direct stringification of `Infinity`, `-Infinity`, `NaN`, and `undefined`. Otherwise, these values become `null`.
   - `extendedTypes`: If `JSONZ.ExtendedTypeMode.AS_FUNCTIONS` or `JSONZ.ExtendedTypeMode.AS_OBJECTS` (the default is `JSONZ.ExtendedTypeMode.OFF`), this enables special representation of additional data types, such as `_Date("2019-07-28T08:49:58.202Z")`, which can be parsed directly as a JavaScript `Date` object, or `{"_$_": "Date", "_$_value": "2019-07-28T08:49:58.202Z"}`, which can be automatically rendered as a `Date` object by a built-in replacer.
-  - `primitiveBigDecimal`: 🧪 If `true` (the default is `false`) this enables direct stringification of arbitrary-precision big decimals using the '`m`' suffix. Otherwise, big decimals must be provided as quoted strings or extended types. _(Note: The '`m`' suffix can't be parsed as current valid JavaScript, but it is potentially a future valid standard notation.)_
+  - `maxIndent`: If a non-zero integer, this option limits levels of indentation, deeper than which object content will be rendered on a single line.
+  - `oneLiners`: An list of property names, the values for which should be rendered on a single line. This argument can be provided as an array, a `Set`, or a comma-delimited string of property names.
+  - `primitiveBigDecimal`: 🧪 If `true` (the default is `false`) this enables direct stringification of arbitrary-precision big decimals using the '`m`' suffix. Otherwise, big decimals must be provided as quoted strings or extended types. _(Note: The '`m`' suffix cannot be parsed as valid JavaScript, making this notation a deviation from JavaScript parsing compatibility.)_
   - `primitiveBigInt`: If `true` (the default is `false`) this enables direct stringification of big integers using the '`n`' suffix. Otherwise, big integers are provided as quoted strings or extended types.
-  - `primitiveDecimal`: 🧪 If `true` (the default is `false`) this enables direct stringification of fixed-precision big decimals using the '`d`' suffix. Otherwise, big decimals must be provided as quoted strings or extended types. _(Note: The '`d`' suffix can't be parsed as current valid JavaScript, but it is potentially a future valid standard notation.)_
+  - `primitiveDecimal`: 🧪 If `true` (the default is `false`) this enables direct stringification of fixed-precision big decimals using the '`d`' suffix. Otherwise, big decimals must be provided as quoted strings or extended types. _(Note: The '`d`' suffix cannot be parsed as valid JavaScript, making this notation a deviation from JavaScript parsing compatibility.)_
+  - `propertyFilter`: This option provides functionality identical to providing an array of property names for the `replacer`/`options` argument &mdash; only the object properties listed here will be rendered. Using this option allows additional options to be used simultaneously.
   - `quote`: A string representing the quote character to use when serializing strings (single quote `'` or double quote `"`), or one of the following values:
     - `JSONZ.Quote.DOUBLE`: Always quote with double quotes (this is the default).
     - `JSONZ.Quote.SINGLE`: Always quote with single quotes.

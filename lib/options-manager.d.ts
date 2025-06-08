@@ -14,8 +14,8 @@ export const enum ExtendedTypeMode {
 }
 
 export type JsonZAllowedKeys = (string | number)[];
-
-export type JsonZReplacer = (holder: any, key: string, value: any) => any;
+export type ReplacerContext = { holder?: any, stack?: string[] };
+export type JsonZReplacer = (key: string, value: any, context?: ReplacerContext) => any;
 
 export const enum OptionSet {
   MAX_COMPATIBILITY,
@@ -26,6 +26,9 @@ export const enum OptionSet {
 export interface JsonZOptions {
   extendedPrimitives?: boolean,
   extendedTypes?: ExtendedTypeMode,
+  maxIndent?: number | '';
+  oneLiners?: string | string[] | Set<string>;
+  propertyFilter?: (string | number | String | Number)[];
   primitiveBigDecimal?: boolean;
   primitiveBigInt?: boolean;
   primitiveDecimal?: boolean;
